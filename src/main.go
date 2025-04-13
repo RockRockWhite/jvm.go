@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import "github.com/RockRockWhite/jvm.go/src/cmd"
 
 func main() {
-	fmt.Print("Hello, World!")
+	if err := cmd.Run(); err != nil {
+		panic(err)
+	}
 }
