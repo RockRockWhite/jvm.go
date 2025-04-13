@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+
+	"github.com/RockRockWhite/jvm.go/src/class_file"
 )
 
 func Run() error {
@@ -18,9 +20,13 @@ func Run() error {
 		return err
 	}
 
-	for _, b := range data {
-		fmt.Printf("%02x ", b)
+	cf := class_file.NewClassFile(data)
+	class_info, err := cf.IntoClassInfo()
+	if err != nil {
+		return err
 	}
+
+	fmt.Println(class_info)
 
 	return nil
 }
