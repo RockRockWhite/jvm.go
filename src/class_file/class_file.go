@@ -60,6 +60,12 @@ func (cf *ClassFile) readAndCheckVersion() (bool, uint16, uint16, error) {
 	}
 }
 
+func (cf *ClassFile) readAccessFlags() (uint16, error) {
+	access_flags, err := cf.readUInt16()
+
+	return access_flags, err
+}
+
 func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 	var res ClassInfo
 
@@ -76,6 +82,12 @@ func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 	} else {
 		res.MinorVersion = minor_version
 		res.MajorVersion = major_version
+	}
+
+	if access_flags, err := cf.readAccessFlags(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		res.AccessFlags = access_flags
 	}
 
 	return res, nil
