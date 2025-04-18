@@ -26,7 +26,7 @@ func Run() error {
 		return err
 	}
 
-	fmt.Println(class_info)
+	fmt.Printf("%+v", class_info)
 
 	return nil
 }

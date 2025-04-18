@@ -6,11 +6,16 @@ type ConstantPoolInfo struct {
 type InterfaceInfo struct {
 }
 
-type FieldInfo struct {
+type MemberInfo struct {
+	ConstantPool    ConstantPoolInfo
+	AccessFlags     uint16
+	NameIndex       uint16
+	DescriptorIndex uint16
+	Attrubutes      []AttributeInfo
 }
 
-type MethodInfo struct {
-}
+type FieldInfo MemberInfo
+type MethodInfo MemberInfo
 
 type AttributeInfo struct {
 }
