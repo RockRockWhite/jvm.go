@@ -102,6 +102,16 @@ func NewConstantMethodRef(constant_member_ref ConstantMemberRef) ConstantMethodR
 	}
 }
 
+type ConstantInterfaceMethodRef struct {
+	MemberRef ConstantMemberRef
+}
+
+func NewConstantInterfaceMethodRef(constant_member_ref ConstantMemberRef) ConstantInterfaceMethodRef {
+	return ConstantInterfaceMethodRef{
+		MemberRef: constant_member_ref,
+	}
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }

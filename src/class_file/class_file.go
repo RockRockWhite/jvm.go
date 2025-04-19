@@ -257,6 +257,11 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 			return NewConstantMethodRef(constant_member_ref), nil
 		}
 	case CONSTANT_InferfaceMethodref:
+		if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
+			return nil, err
+		} else {
+			return NewConstantInterfaceMethodRef(constant_member_ref), nil
+		}
 	case CONSTANT_String:
 		return cf.readConstantString()
 	case CONSTANT_Integer:
