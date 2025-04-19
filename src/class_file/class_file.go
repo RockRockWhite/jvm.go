@@ -182,7 +182,7 @@ func (cf *ClassFile) readConstantString() (ConstantInfo, error) {
 
 	// convert bytes to string
 	return ConstantString{
-		EnterIndex: index,
+		EntryIndex: index,
 	}, nil
 }
 
@@ -194,7 +194,24 @@ func (cf *ClassFile) readConstantClass() (ConstantInfo, error) {
 
 	// convert bytes to string
 	return ConstantClass{
-		EnterIndex: index,
+		EntryIndex: index,
+	}, nil
+}
+
+func (cf *ClassFile) readNameAndType() (ConstantInfo, error) {
+	name_index, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	descriptor_index, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	return ConstantNameAndType{
+		NameEntryIndex:       name_index,
+		DescriptorEntryIndex: descriptor_index,
 	}, nil
 }
 
@@ -223,6 +240,7 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	case CONSTANT_Double:
 		return cf.readConstantDouble()
 	case CONSTANT_NameAndType:
+		return cf.readNameAndType()
 	case CONSTANT_Utf8:
 		return cf.readConstantUtf8()
 	case CONSTANT_MethodHandle:

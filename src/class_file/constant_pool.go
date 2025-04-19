@@ -43,21 +43,38 @@ type ConstantUtf8 struct {
 }
 
 type ConstantString struct {
-	EnterIndex uint16
+	EntryIndex uint16
 }
 
 func (cs *ConstantString) GetString(constant_pool ConstantPoolInfo) string {
-	constant_utf8, _ := constant_pool.Entries[cs.EnterIndex].(*ConstantUtf8)
+	constant_utf8, _ := constant_pool.Entries[cs.EntryIndex].(*ConstantUtf8)
 	return constant_utf8.str
 }
 
 type ConstantClass struct {
-	EnterIndex uint16
+	EntryIndex uint16
 }
 
 func (cc *ConstantClass) GetClassName(constant_pool ConstantPoolInfo) string {
-	constant_utf8, _ := constant_pool.Entries[cc.EnterIndex].(*ConstantUtf8)
+	constant_utf8, _ := constant_pool.Entries[cc.EntryIndex].(*ConstantUtf8)
 	return constant_utf8.str
+}
+
+type ConstantNameAndType struct {
+	NameEntryIndex       uint16
+	DescriptorEntryIndex uint16
+}
+
+func (c *ConstantNameAndType) GetName(constant_pool ConstantPoolInfo) string {
+	name_utf8, _ := constant_pool.Entries[c.NameEntryIndex].(*ConstantUtf8)
+
+	return name_utf8.str
+}
+
+func (c *ConstantNameAndType) GetDescriptor(constant_pool ConstantPoolInfo) string {
+	descriptor_utf8, _ := constant_pool.Entries[c.DescriptorEntryIndex].(*ConstantUtf8)
+
+	return descriptor_utf8.str
 }
 
 type ConstantPoolInfo struct {
