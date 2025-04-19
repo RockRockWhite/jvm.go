@@ -391,18 +391,44 @@ func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 		res.SuperClassIndex = super_class
 	}
 
-	// if interface_indexes, err := cf.readIndexTable(); err != nil {
-	// 	return ClassInfo{}, err
-	// } else {
-	// 	interfaces := make([]InterfaceInfo, 0, len(interface_indexes))
-	// 	for _, index := range interface_indexes {
-	// 		interfaces = append(interfaces, InterfaceInfo{
-	// 			NameIndex: index,
-	// 		})
-	// 	}
+	if interface_indexes, err := cf.readIndexTable(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		interfaces := make([]InterfaceInfo, 0, len(interface_indexes))
+		for _, index := range interface_indexes {
+			interfaces = append(interfaces, InterfaceInfo{
+				NameIndex: index,
+			})
+		}
 
-	// 	res.Interfaces = interfaces
-	// }
+		res.Interfaces = interfaces
+	}
+
+	if field_indexes, err := cf.readIndexTable(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		fields := make([]FieldInfo, 0, len(field_indexes))
+		for _, index := range field_indexes {
+			fields = append(fields, FieldInfo{
+				NameIndex: index,
+			})
+		}
+
+		res.Fields = fields
+	}
+
+	if method_indexes, err := cf.readIndexTable(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		methods := make([]MethodInfo, 0, len(method_indexes))
+		for _, index := range method_indexes {
+			methods = append(methods, MethodInfo{
+				NameIndex: index,
+			})
+		}
+
+		res.Methods = methods
+	}
 
 	return res, nil
 }
