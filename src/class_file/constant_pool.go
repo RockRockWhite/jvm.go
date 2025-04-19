@@ -77,6 +77,31 @@ func (c *ConstantNameAndType) GetDescriptor(constant_pool ConstantPoolInfo) stri
 	return descriptor_utf8.str
 }
 
+type ConstantMemberRef struct {
+	ClassEntryIndex       uint16
+	NameAndTypeEntryIndex uint16
+}
+
+type ConstantFieldRef struct {
+	MemberRef ConstantMemberRef
+}
+
+func NewConstantFieldRef(constant_member_ref ConstantMemberRef) ConstantFieldRef {
+	return ConstantFieldRef{
+		MemberRef: constant_member_ref,
+	}
+}
+
+type ConstantMethodRef struct {
+	MemberRef ConstantMemberRef
+}
+
+func NewConstantMethodRef(constant_member_ref ConstantMemberRef) ConstantMethodRef {
+	return ConstantMethodRef{
+		MemberRef: constant_member_ref,
+	}
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }

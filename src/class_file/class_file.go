@@ -198,7 +198,7 @@ func (cf *ClassFile) readConstantClass() (ConstantInfo, error) {
 	}, nil
 }
 
-func (cf *ClassFile) readNameAndType() (ConstantInfo, error) {
+func (cf *ClassFile) readConstantNameAndType() (ConstantInfo, error) {
 	name_index, err := cf.readUInt16()
 	if err != nil {
 		return nil, err
@@ -215,6 +215,24 @@ func (cf *ClassFile) readNameAndType() (ConstantInfo, error) {
 	}, nil
 }
 
+func (cf *ClassFile) readConstantMemberRef() (ConstantMemberRef, error) {
+	class_index, err := cf.readUInt16()
+	if err != nil {
+		return ConstantMemberRef{}, err
+	}
+
+	name_and_type_index, err := cf.readUInt16()
+	if err != nil {
+		return ConstantMemberRef{}, err
+	}
+
+	// convert bytes to string
+	return ConstantMemberRef{
+		ClassEntryIndex:       class_index,
+		NameAndTypeEntryIndex: name_and_type_index,
+	}, nil
+}
+
 func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	// read constant type tag
 	tag, err := cf.readUInt16()
@@ -227,7 +245,17 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	case CONSTANT_Class:
 		return cf.readConstantClass()
 	case CONSTANT_Fieldref:
+		if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
+			return nil, err
+		} else {
+			return NewConstantFieldRef(constant_member_ref), nil
+		}
 	case CONSTANT_Methodref:
+		if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
+			return nil, err
+		} else {
+			return NewConstantMethodRef(constant_member_ref), nil
+		}
 	case CONSTANT_InferfaceMethodref:
 	case CONSTANT_String:
 		return cf.readConstantString()
@@ -240,7 +268,7 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	case CONSTANT_Double:
 		return cf.readConstantDouble()
 	case CONSTANT_NameAndType:
-		return cf.readNameAndType()
+		return cf.readConstantNameAndType()
 	case CONSTANT_Utf8:
 		return cf.readConstantUtf8()
 	case CONSTANT_MethodHandle:
