@@ -116,6 +116,16 @@ func (cf *ClassFile) readAccessFlags() (uint16, error) {
 	return access_flags, err
 }
 
+func (cf *ClassFile) readThisClassIndex() (uint16, error) {
+	index, err := cf.readUInt16()
+	return index, err
+}
+
+func (cf *ClassFile) readSuperClassIndex() (uint16, error) {
+	index, err := cf.readUInt16()
+	return index, err
+}
+
 func (cf *ClassFile) readConstantInt() (ConstantInfo, error) {
 	value, err := cf.readInt32()
 	if err != nil {
@@ -341,6 +351,18 @@ func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 		return ClassInfo{}, err
 	} else {
 		res.AccessFlags = access_flags
+	}
+
+	if this_class, err := cf.readThisClassIndex(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		res.ThisClassIndex = this_class
+	}
+
+	if super_class, err := cf.readSuperClassIndex(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		res.SuperClassIndex = super_class
 	}
 
 	return res, nil
