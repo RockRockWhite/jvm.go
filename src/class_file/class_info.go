@@ -14,6 +14,14 @@ type MemberInfo struct {
 	Attrubutes      []AttributeInfo
 }
 
+func (m *MemberInfo) GetName() string {
+	return ""
+}
+
+func (m *MemberInfo) GetDescriptor() string {
+	return ""
+}
+
 type FieldInfo MemberInfo
 type MethodInfo MemberInfo
 
