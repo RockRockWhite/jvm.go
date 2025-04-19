@@ -51,6 +51,15 @@ func (cs *ConstantString) GetString(constant_pool ConstantPoolInfo) string {
 	return constant_utf8.str
 }
 
+type ConstantClass struct {
+	EnterIndex uint16
+}
+
+func (cc *ConstantClass) GetClassName(constant_pool ConstantPoolInfo) string {
+	constant_utf8, _ := constant_pool.Entries[cc.EnterIndex].(*ConstantUtf8)
+	return constant_utf8.str
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }

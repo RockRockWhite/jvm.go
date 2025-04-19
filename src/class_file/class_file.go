@@ -186,6 +186,18 @@ func (cf *ClassFile) readConstantString() (ConstantInfo, error) {
 	}, nil
 }
 
+func (cf *ClassFile) readConstantClass() (ConstantInfo, error) {
+	index, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	// convert bytes to string
+	return ConstantClass{
+		EnterIndex: index,
+	}, nil
+}
+
 func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	// read constant type tag
 	tag, err := cf.readUInt16()
@@ -196,6 +208,7 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	constant_type := ConstantType(tag)
 	switch constant_type {
 	case CONSTANT_Class:
+		return cf.readConstantClass()
 	case CONSTANT_Fieldref:
 	case CONSTANT_Methodref:
 	case CONSTANT_InferfaceMethodref:
