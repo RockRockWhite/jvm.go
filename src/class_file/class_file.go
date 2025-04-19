@@ -326,7 +326,8 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 	entries = append(entries, nil) // index 0 is not used
 
 	// only avaliable till cnt-1
-	for i := 1; i != int(cnt)-1; i++ {
+	// [1, cnt)
+	for i := 1; i != int(cnt); i++ {
 		constant_info, err := cf.readConstantInfo()
 		if err != nil {
 			return ConstantPoolInfo{}, err
