@@ -1,10 +1,10 @@
 package class_file
 
 type InterfaceInfo struct {
+	NameIndex uint16
 }
 
 type MemberInfo struct {
-	ConstantPool    ConstantPoolInfo
 	AccessFlags     uint16
 	NameIndex       uint16
 	DescriptorIndex uint16
@@ -29,11 +29,11 @@ type ClassInfo struct {
 	Maigc           uint32
 	MinorVersion    uint16
 	MajorVersion    uint16
-	ConstantPool    []ConstantPoolInfo
+	ConstantPool    ConstantPoolInfo
 	AccessFlags     uint16
 	ThisClassIndex  uint16
 	SuperClassIndex uint16
-	InterfaceIndexs []InterfaceInfo
+	Interfaces      []InterfaceInfo
 	Fields          []FieldInfo
 	Methods         []MethodInfo
 	Attrubutes      []AttributeInfo

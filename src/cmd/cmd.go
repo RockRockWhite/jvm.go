@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -26,7 +27,8 @@ func Run() error {
 		return err
 	}
 
-	fmt.Printf("%+v", class_info)
+	b, _ := json.MarshalIndent(class_info, "", "  ")
+	fmt.Println(string(b))
 
 	return nil
 }

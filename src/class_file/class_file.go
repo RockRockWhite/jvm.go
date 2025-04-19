@@ -17,6 +17,13 @@ func NewClassFile(data []byte) ClassFile {
 	}
 }
 
+func (cf *ClassFile) readUInt8() (uint8, error) {
+	var res uint8
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
 func (cf *ClassFile) readUInt16() (uint16, error) {
 	var res uint16
 	err := binary.Read(cf.reader, binary.BigEndian, &res)
@@ -73,9 +80,8 @@ func (cf *ClassFile) readFloat64() (float64, error) {
 	return res, err
 }
 
-func (cf *ClassFile) readBytes(size uint32) ([]byte, error) {
+func (cf *ClassFile) readBytes(size uint16) ([]byte, error) {
 	bytes := make([]byte, size)
-	cf.reader.Read(bytes)
 	_, err := io.ReadFull(cf.reader, bytes)
 
 	return bytes, err
@@ -116,14 +122,27 @@ func (cf *ClassFile) readAccessFlags() (uint16, error) {
 	return access_flags, err
 }
 
-func (cf *ClassFile) readThisClassIndex() (uint16, error) {
+func (cf *ClassFile) readIndex() (uint16, error) {
 	index, err := cf.readUInt16()
 	return index, err
 }
 
-func (cf *ClassFile) readSuperClassIndex() (uint16, error) {
-	index, err := cf.readUInt16()
-	return index, err
+func (cf *ClassFile) readIndexTable() ([]uint16, error) {
+	index_count, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := make([]uint16, 0, index_count)
+
+	for i := 0; i != int(index_count); i++ {
+		index, err := cf.readUInt16()
+		if err != nil {
+			return nil, err
+		}
+		indexes = append(indexes, index)
+	}
+	return indexes, err
 }
 
 func (cf *ClassFile) readConstantInt() (ConstantInfo, error) {
@@ -132,7 +151,7 @@ func (cf *ClassFile) readConstantInt() (ConstantInfo, error) {
 		return nil, err
 	}
 	return ConstantInt{
-		value: value,
+		Value: value,
 	}, nil
 }
 
@@ -142,7 +161,7 @@ func (cf *ClassFile) readConstantLong() (ConstantInfo, error) {
 		return nil, err
 	}
 	return ConstantLong{
-		value: value,
+		Value: value,
 	}, nil
 }
 
@@ -152,7 +171,7 @@ func (cf *ClassFile) readConstantFloat() (ConstantInfo, error) {
 		return nil, err
 	}
 	return ConstantFloat{
-		value: value,
+		Value: value,
 	}, nil
 }
 
@@ -162,25 +181,24 @@ func (cf *ClassFile) readConstantDouble() (ConstantInfo, error) {
 		return nil, err
 	}
 	return ConstantDouble{
-		value: value,
+		Value: value,
 	}, nil
 }
 
 func (cf *ClassFile) readConstantUtf8() (ConstantInfo, error) {
-	len, err := cf.readUInt32()
+	length, err := cf.readUInt16()
 	if err != nil {
 		return nil, err
 	}
 
 	var bytes []byte
-	bytes, err = cf.readBytes(len)
+	bytes, err = cf.readBytes(length)
 	if err != nil {
 		return nil, err
 	}
-
 	// convert bytes to string
 	return ConstantUtf8{
-		str: string(bytes),
+		Str: string(bytes),
 	}, nil
 }
 
@@ -245,7 +263,7 @@ func (cf *ClassFile) readConstantMemberRef() (ConstantMemberRef, error) {
 
 func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	// read constant type tag
-	tag, err := cf.readUInt16()
+	tag, err := cf.readUInt8()
 	if err != nil {
 		return nil, err
 	}
@@ -305,9 +323,10 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 	}
 
 	entries := make([]ConstantInfo, 0, cnt-1)
+	entries = append(entries, nil) // index 0 is not used
 
 	// only avaliable till cnt-1
-	for i := 0; i != int(cnt)-1; i++ {
+	for i := 1; i != int(cnt)-1; i++ {
 		constant_info, err := cf.readConstantInfo()
 		if err != nil {
 			return ConstantPoolInfo{}, err
@@ -347,23 +366,42 @@ func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 		res.MajorVersion = major_version
 	}
 
+	if constant_pool, err := cf.readConstantPoolInfo(); err != nil {
+		return ClassInfo{}, err
+	} else {
+		res.ConstantPool = constant_pool
+	}
+
 	if access_flags, err := cf.readAccessFlags(); err != nil {
 		return ClassInfo{}, err
 	} else {
 		res.AccessFlags = access_flags
 	}
 
-	if this_class, err := cf.readThisClassIndex(); err != nil {
+	if this_class, err := cf.readIndex(); err != nil {
 		return ClassInfo{}, err
 	} else {
 		res.ThisClassIndex = this_class
 	}
 
-	if super_class, err := cf.readSuperClassIndex(); err != nil {
+	if super_class, err := cf.readIndex(); err != nil {
 		return ClassInfo{}, err
 	} else {
 		res.SuperClassIndex = super_class
 	}
+
+	// if interface_indexes, err := cf.readIndexTable(); err != nil {
+	// 	return ClassInfo{}, err
+	// } else {
+	// 	interfaces := make([]InterfaceInfo, 0, len(interface_indexes))
+	// 	for _, index := range interface_indexes {
+	// 		interfaces = append(interfaces, InterfaceInfo{
+	// 			NameIndex: index,
+	// 		})
+	// 	}
+
+	// 	res.Interfaces = interfaces
+	// }
 
 	return res, nil
 }

@@ -23,23 +23,23 @@ type ConstantInfo interface {
 }
 
 type ConstantInt struct {
-	value int32
+	Value int32
 }
 
 type ConstantFloat struct {
-	value float32
+	Value float32
 }
 
 type ConstantLong struct {
-	value int64
+	Value int64
 }
 
 type ConstantDouble struct {
-	value float64
+	Value float64
 }
 
 type ConstantUtf8 struct {
-	str string
+	Str string
 }
 
 type ConstantString struct {
@@ -48,7 +48,7 @@ type ConstantString struct {
 
 func (cs *ConstantString) GetString(constant_pool ConstantPoolInfo) string {
 	constant_utf8, _ := constant_pool.Entries[cs.EntryIndex].(*ConstantUtf8)
-	return constant_utf8.str
+	return constant_utf8.Str
 }
 
 type ConstantClass struct {
@@ -57,7 +57,7 @@ type ConstantClass struct {
 
 func (cc *ConstantClass) GetClassName(constant_pool ConstantPoolInfo) string {
 	constant_utf8, _ := constant_pool.Entries[cc.EntryIndex].(*ConstantUtf8)
-	return constant_utf8.str
+	return constant_utf8.Str
 }
 
 type ConstantNameAndType struct {
@@ -68,13 +68,13 @@ type ConstantNameAndType struct {
 func (c *ConstantNameAndType) GetName(constant_pool ConstantPoolInfo) string {
 	name_utf8, _ := constant_pool.Entries[c.NameEntryIndex].(*ConstantUtf8)
 
-	return name_utf8.str
+	return name_utf8.Str
 }
 
 func (c *ConstantNameAndType) GetDescriptor(constant_pool ConstantPoolInfo) string {
 	descriptor_utf8, _ := constant_pool.Entries[c.DescriptorEntryIndex].(*ConstantUtf8)
 
-	return descriptor_utf8.str
+	return descriptor_utf8.Str
 }
 
 type ConstantMemberRef struct {
