@@ -73,6 +73,14 @@ func (cf *ClassFile) readFloat64() (float64, error) {
 	return res, err
 }
 
+func (cf *ClassFile) readBytes(size uint32) ([]byte, error) {
+	bytes := make([]byte, size)
+	cf.reader.Read(bytes)
+	_, err := io.ReadFull(cf.reader, bytes)
+
+	return bytes, err
+}
+
 func (cf *ClassFile) checkMagic() (bool, error) {
 	magic, err := cf.readUInt32()
 	if err != nil {
@@ -148,6 +156,24 @@ func (cf *ClassFile) readConstantDouble() (ConstantInfo, error) {
 	}, nil
 }
 
+func (cf *ClassFile) readConstantUtf8() (ConstantInfo, error) {
+	len, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	var bytes []byte
+	bytes, err = cf.readBytes(len)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert bytes to string
+	return ConstantUtf8{
+		str: string(bytes),
+	}, nil
+}
+
 func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	// read constant type tag
 	tag, err := cf.readUInt16()
@@ -172,6 +198,7 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 		return cf.readConstantDouble()
 	case CONSTANT_NameAndType:
 	case CONSTANT_Utf8:
+		return cf.readConstantUtf8()
 	case CONSTANT_MethodHandle:
 	case CONSTANT_MethodType:
 	case CONSTANT_InvokeDynamic:

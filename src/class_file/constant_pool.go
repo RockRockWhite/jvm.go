@@ -38,6 +38,10 @@ type ConstantDouble struct {
 	value float64
 }
 
+type ConstantUtf8 struct {
+	str string
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }
