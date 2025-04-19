@@ -1,8 +1,5 @@
 package class_file
 
-type ConstantPoolInfo struct {
-}
-
 type InterfaceInfo struct {
 }
 

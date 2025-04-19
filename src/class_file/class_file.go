@@ -66,6 +66,67 @@ func (cf *ClassFile) readAccessFlags() (uint16, error) {
 	return access_flags, err
 }
 
+func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
+	// read constant type tag
+	tag, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	constant_type := ConstantType(tag)
+	switch constant_type {
+	case CONSTANT_Class:
+	case CONSTANT_Fieldref:
+	case CONSTANT_Methodref:
+	case CONSTANT_InferfaceMethodref:
+	case CONSTANT_String:
+	case CONSTANT_Integer:
+	case CONSTANT_Float:
+	case CONSTANT_Long:
+	case CONSTANT_Double:
+	case CONSTANT_NameAndType:
+	case CONSTANT_Utf8:
+	case CONSTANT_MethodHandle:
+	case CONSTANT_MethodType:
+	case CONSTANT_InvokeDynamic:
+	default:
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type %d", tag)
+	}
+
+	return nil, nil
+}
+
+func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
+
+	// read constant pool count
+	cnt, err := cf.readUInt16()
+	if err != nil {
+		return ConstantPoolInfo{}, err
+	}
+
+	entries := make([]ConstantInfo, 0)
+
+	// only avaliable till cnt-1
+	for i := 0; i != int(cnt)-1; i++ {
+		constant_info, err := cf.readConstantInfo()
+		if err != nil {
+			return ConstantPoolInfo{}, err
+		}
+
+		entries = append(entries, constant_info)
+
+		// long and double take up two slots
+		is_long_or_double := false
+		if is_long_or_double {
+			i++
+		}
+	}
+
+	return ConstantPoolInfo{
+		Entries: entries,
+	}, nil
+}
+
 func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 	var res ClassInfo
 
