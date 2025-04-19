@@ -42,6 +42,15 @@ type ConstantUtf8 struct {
 	str string
 }
 
+type ConstantString struct {
+	EnterIndex uint16
+}
+
+func (cs *ConstantString) GetString(constant_pool ConstantPoolInfo) string {
+	constant_utf8, _ := constant_pool.Entries[cs.EnterIndex].(*ConstantUtf8)
+	return constant_utf8.str
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }
