@@ -22,6 +22,22 @@ const (
 type ConstantInfo interface {
 }
 
+type ConstantInt struct {
+	value int32
+}
+
+type ConstantFloat struct {
+	value float32
+}
+
+type ConstantLong struct {
+	value int64
+}
+
+type ConstantDouble struct {
+	value float64
+}
+
 type ConstantPoolInfo struct {
 	Entries []ConstantInfo
 }

@@ -31,6 +31,48 @@ func (cf *ClassFile) readUInt32() (uint32, error) {
 	return res, err
 }
 
+func (cf *ClassFile) readUInt64() (uint64, error) {
+	var res uint64
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
+func (cf *ClassFile) readInt16() (int16, error) {
+	var res int16
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
+func (cf *ClassFile) readInt32() (int32, error) {
+	var res int32
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
+func (cf *ClassFile) readInt64() (int64, error) {
+	var res int64
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
+func (cf *ClassFile) readFloat32() (float32, error) {
+	var res float32
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
+func (cf *ClassFile) readFloat64() (float64, error) {
+	var res float64
+	err := binary.Read(cf.reader, binary.BigEndian, &res)
+
+	return res, err
+}
+
 func (cf *ClassFile) checkMagic() (bool, error) {
 	magic, err := cf.readUInt32()
 	if err != nil {
@@ -66,6 +108,46 @@ func (cf *ClassFile) readAccessFlags() (uint16, error) {
 	return access_flags, err
 }
 
+func (cf *ClassFile) readConstantInt() (ConstantInfo, error) {
+	value, err := cf.readInt32()
+	if err != nil {
+		return nil, err
+	}
+	return ConstantInt{
+		value: value,
+	}, nil
+}
+
+func (cf *ClassFile) readConstantLong() (ConstantInfo, error) {
+	value, err := cf.readInt64()
+	if err != nil {
+		return nil, err
+	}
+	return ConstantLong{
+		value: value,
+	}, nil
+}
+
+func (cf *ClassFile) readConstantFloat() (ConstantInfo, error) {
+	value, err := cf.readFloat32()
+	if err != nil {
+		return nil, err
+	}
+	return ConstantFloat{
+		value: value,
+	}, nil
+}
+
+func (cf *ClassFile) readConstantDouble() (ConstantInfo, error) {
+	value, err := cf.readFloat64()
+	if err != nil {
+		return nil, err
+	}
+	return ConstantDouble{
+		value: value,
+	}, nil
+}
+
 func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	// read constant type tag
 	tag, err := cf.readUInt16()
@@ -81,9 +163,13 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	case CONSTANT_InferfaceMethodref:
 	case CONSTANT_String:
 	case CONSTANT_Integer:
+		return cf.readConstantInt()
 	case CONSTANT_Float:
+		return cf.readConstantFloat()
 	case CONSTANT_Long:
+		return cf.readConstantLong()
 	case CONSTANT_Double:
+		return cf.readConstantDouble()
 	case CONSTANT_NameAndType:
 	case CONSTANT_Utf8:
 	case CONSTANT_MethodHandle:
