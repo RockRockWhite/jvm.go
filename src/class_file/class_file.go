@@ -190,7 +190,7 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 		return ConstantPoolInfo{}, err
 	}
 
-	entries := make([]ConstantInfo, 0)
+	entries := make([]ConstantInfo, 0, cnt-1)
 
 	// only avaliable till cnt-1
 	for i := 0; i != int(cnt)-1; i++ {
@@ -202,8 +202,10 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 		entries = append(entries, constant_info)
 
 		// long and double take up two slots
-		is_long_or_double := false
-		if is_long_or_double {
+		// append one empty slot for convenience
+		switch constant_info.(type) {
+		case ConstantLong, ConstantDouble:
+			entries = append(entries, nil)
 			i++
 		}
 	}
