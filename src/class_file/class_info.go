@@ -22,8 +22,7 @@ func (m *MemberInfo) GetDescriptor() string {
 type FieldInfo MemberInfo
 type MethodInfo MemberInfo
 
-type AttributeInfo struct {
-}
+
 
 type ClassInfo struct {
 	Maigc           uint32
@@ -36,5 +35,5 @@ type ClassInfo struct {
 	Interfaces      []InterfaceInfo
 	Fields          []FieldInfo
 	Methods         []MethodInfo
-	Attrubutes      []AttributeInfo
+	Attributes      []AttributeInfo
 }

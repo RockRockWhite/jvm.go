@@ -349,6 +349,41 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 	}, nil
 }
 
+func (cf *ClassFile) readAttributes(constant_pool ConstantPoolInfo) ([]AttributeInfo, error) {
+	cnt, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	attributes := make([]AttributeInfo, 0, cnt)
+
+	for i := 0; i != int(cnt); i++ {
+		// read attribute name
+		name_index, err := cf.readUInt16()
+		if err != nil {
+			return nil, err
+		}
+
+		attribute_type := AttributeType(constant_pool.Entries[name_index].(*ConstantUtf8).Str)
+
+		switch attribute_type {
+		case ATTRIBUTE_Code:
+		case ATTRIBUTE_ConstantValue:
+		case ATTRIBUTE_Deprecated:
+		case ATTRIBUTE_Exceptions:
+		case ATTRIBUTE_LineNumberTable:
+		case ATTRIBUTE_LocalVariableTable:
+		case ATTRIBUTE_SourceFile:
+		case ATTRIBUTE_Synthetic:
+		default:
+			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid attribute type %s", attribute_type)
+		}
+
+	}
+
+	return attributes, nil
+}
+
 func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 	var res ClassInfo
 
