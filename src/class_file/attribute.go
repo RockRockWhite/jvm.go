@@ -29,3 +29,18 @@ type AttributeSourceFile struct {
 type AttributeConstantValue struct {
 	ConstantValue any
 }
+
+type ExpectionTableEntry struct {
+	StartPC   uint16
+	EndPC     uint16
+	HandlerPC uint16
+	CatchType uint16
+}
+
+type AttributeCode struct {
+	MaxStack       uint16
+	MaxLocals      uint16
+	Code           []byte
+	ExpectionTable []ExpectionTableEntry
+	Attributes     []AttributeInfo
+}

@@ -444,6 +444,66 @@ func (cf *ClassFile) readAttributeConstantValue(constant_pool ConstantPoolInfo) 
 
 }
 
+func (cf *ClassFile) readExpectionTableEntry() (ExpectionTableEntry, error) {
+	return ExpectionTableEntry{}, nil
+}
+
+func (cf *ClassFile) readAttributeCode(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
+	// read length, unused
+	_, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	// read max_stack
+	max_stack, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	max_locals, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	code_len, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+	code := make([]byte, code_len)
+
+	if _, err := io.ReadFull(cf.reader, code); err != nil {
+		return nil, err
+	}
+
+	exception_table_len, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	exception_table := make([]ExpectionTableEntry, 0, exception_table_len)
+	for i := 0; i != int(exception_table_len); i++ {
+		expection_table_entry, err := cf.readExpectionTableEntry()
+		if err != nil {
+			return nil, nil
+		}
+		exception_table = append(exception_table, expection_table_entry)
+	}
+
+	attributes, err := cf.readAttributes(constant_pool)
+	if err != nil {
+		return nil, err
+	}
+
+	return AttributeCode{
+		MaxStack:       max_stack,
+		MaxLocals:      max_locals,
+		Code:           code,
+		ExpectionTable: exception_table,
+		Attributes:     attributes,
+	}, nil
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -459,7 +519,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 
 	attribute_type := AttributeType(constant_utf8_ptr.Str)
 	switch attribute_type {
-	// case ATTRIBUTE_Code:
+	case ATTRIBUTE_Code:
+		return cf.readAttributeCode(constant_pool)
 	case ATTRIBUTE_ConstantValue:
 		return cf.readAttributeConstantValue(constant_pool)
 	case ATTRIBUTE_Deprecated:
