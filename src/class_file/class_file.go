@@ -314,19 +314,6 @@ func (cf *ClassFile) readConstantInfo() (ConstantInfo, error) {
 	return nil, nil
 }
 
-func (cf *ClassFile) readAttributeDeprecated() (AttributeInfo, error) {
-	length, err := cf.readUInt16()
-	if err != nil {
-		return nil, err
-	}
-
-	if length != 0 {
-		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid length for Deprecated attribute")
-	}
-
-	return AttributeDeprecated{}, nil
-}
-
 func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 
 	// read constant pool count
@@ -362,6 +349,32 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 	}, nil
 }
 
+func (cf *ClassFile) readAttributeDeprecated() (AttributeInfo, error) {
+	length, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	if length != 0 {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid length for Deprecated attribute")
+	}
+
+	return AttributeDeprecated{}, nil
+}
+
+func (cf *ClassFile) readAttributeSynthetic() (AttributeInfo, error) {
+	length, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	if length != 0 {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid length for Synthetic attribute")
+	}
+
+	return AttributeSynthetic{}, nil
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -381,7 +394,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 	// case ATTRIBUTE_LineNumberTable:
 	// case ATTRIBUTE_LocalVariableTable:
 	// case ATTRIBUTE_SourceFile:
-	// case ATTRIBUTE_Synthetic:
+	case ATTRIBUTE_Synthetic:
+		return cf.readAttributeSynthetic()
 	default:
 		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid attribute type %s", attribute_type)
 	}

@@ -18,3 +18,6 @@ const (
 
 type AttributeDeprecated struct {
 }
+
+type AttributeSynthetic struct {
+}
