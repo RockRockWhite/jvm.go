@@ -15,3 +15,6 @@ const (
 	ATTRIBUTE_SourceFile         AttributeType = "SourceFile"
 	ATTRIBUTE_Synthetic          AttributeType = "Synthetic"
 )
+
+type AttributeDeprecated struct {
+}
