@@ -25,3 +25,7 @@ type AttributeSynthetic struct {
 type AttributeSourceFile struct {
 	SourceFile string
 }
+
+type AttributeConstantValue struct {
+	ConstantValue any
+}

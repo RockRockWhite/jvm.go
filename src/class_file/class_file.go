@@ -401,6 +401,49 @@ func (cf *ClassFile) readAttributeSourceFile(constant_pool ConstantPoolInfo) (At
 	}, nil
 }
 
+func (cf *ClassFile) readAttributeConstantValue(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
+	length, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	if length != 2 {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid length for ConstantValue attribute")
+	}
+
+	constant_value_index, err := cf.readUInt16()
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch constant_pool.Entries[constant_value_index].(type) {
+	case ConstantInt:
+		return AttributeConstantValue{
+			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantInt).Value,
+		}, nil
+	case ConstantFloat:
+		return AttributeConstantValue{
+			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantFloat).Value,
+		}, nil
+	case ConstantLong:
+		return AttributeConstantValue{
+			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantLong).Value,
+		}, nil
+	case ConstantDouble:
+		return AttributeConstantValue{
+			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantDouble).Value,
+		}, nil
+	case ConstantString:
+		return AttributeConstantValue{
+			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantString).GetString(constant_pool),
+		}, nil
+	default:
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for ConstantValue attribute")
+	}
+
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -417,7 +460,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 	attribute_type := AttributeType(constant_utf8_ptr.Str)
 	switch attribute_type {
 	// case ATTRIBUTE_Code:
-	// case ATTRIBUTE_ConstantValue:
+	case ATTRIBUTE_ConstantValue:
+		return cf.readAttributeConstantValue(constant_pool)
 	case ATTRIBUTE_Deprecated:
 		return cf.readAttributeDeprecated()
 	// case ATTRIBUTE_Exceptions:
