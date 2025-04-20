@@ -21,3 +21,7 @@ type AttributeDeprecated struct {
 
 type AttributeSynthetic struct {
 }
+
+type AttributeSourceFile struct {
+	SourceFile string
+}

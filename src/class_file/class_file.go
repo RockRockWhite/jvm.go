@@ -350,7 +350,7 @@ func (cf *ClassFile) readConstantPoolInfo() (ConstantPoolInfo, error) {
 }
 
 func (cf *ClassFile) readAttributeDeprecated() (AttributeInfo, error) {
-	length, err := cf.readUInt16()
+	length, err := cf.readUInt32()
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +363,7 @@ func (cf *ClassFile) readAttributeDeprecated() (AttributeInfo, error) {
 }
 
 func (cf *ClassFile) readAttributeSynthetic() (AttributeInfo, error) {
-	length, err := cf.readUInt16()
+	length, err := cf.readUInt32()
 	if err != nil {
 		return nil, err
 	}
@@ -375,6 +375,32 @@ func (cf *ClassFile) readAttributeSynthetic() (AttributeInfo, error) {
 	return AttributeSynthetic{}, nil
 }
 
+func (cf *ClassFile) readAttributeSourceFile(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
+	length, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	if length != 2 {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid length for SourceFile attribute")
+	}
+
+	source_file_index, err := cf.readUInt16()
+
+	if err != nil {
+		return nil, err
+	}
+
+	constant_string_ptr, ok := constant_pool.Entries[source_file_index].(*ConstantUtf8)
+	if !ok {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for SourceFile attribute")
+	}
+
+	return AttributeSourceFile{
+		SourceFile: constant_string_ptr.Str,
+	}, nil
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -383,8 +409,12 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 		return nil, err
 	}
 
-	attribute_type := AttributeType(constant_pool.Entries[name_index].(*ConstantUtf8).Str)
+	constant_utf8_ptr, ok := constant_pool.Entries[name_index].(*ConstantUtf8)
+	if !ok {
+		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for attribute name")
+	}
 
+	attribute_type := AttributeType(constant_utf8_ptr.Str)
 	switch attribute_type {
 	// case ATTRIBUTE_Code:
 	// case ATTRIBUTE_ConstantValue:
@@ -393,7 +423,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 	// case ATTRIBUTE_Exceptions:
 	// case ATTRIBUTE_LineNumberTable:
 	// case ATTRIBUTE_LocalVariableTable:
-	// case ATTRIBUTE_SourceFile:
+	case ATTRIBUTE_SourceFile:
+		return cf.readAttributeSourceFile(constant_pool)
 	case ATTRIBUTE_Synthetic:
 		return cf.readAttributeSynthetic()
 	default:
