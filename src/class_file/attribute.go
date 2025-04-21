@@ -44,3 +44,7 @@ type AttributeCode struct {
 	ExpectionTable []ExpectionTableEntry
 	Attributes     []AttributeInfo
 }
+
+type AttributeExceptions struct {
+	Exceptions []string
+}

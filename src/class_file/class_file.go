@@ -504,6 +504,40 @@ func (cf *ClassFile) readAttributeCode(constant_pool ConstantPoolInfo) (Attribut
 	}, nil
 }
 
+func (cf *ClassFile) readAttributeException(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
+	// read length, unused
+	_, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	// read exceptions
+	exceptions_len, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+	exceptions := make([]string, 0, exceptions_len)
+
+	for i := 0; i != int(exceptions_len); i++ {
+
+		expection_name_index, err := cf.readUInt16()
+		if err != nil {
+			return nil, err
+		}
+
+		constant_class, ok := constant_pool.Entries[expection_name_index].(*ConstantClass)
+		if !ok {
+			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for Exception attribute")
+		}
+
+		exceptions = append(exceptions, constant_class.GetClassName(constant_pool))
+	}
+
+	return AttributeExceptions{
+		Exceptions: exceptions,
+	}, nil
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -525,7 +559,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 		return cf.readAttributeConstantValue(constant_pool)
 	case ATTRIBUTE_Deprecated:
 		return cf.readAttributeDeprecated()
-	// case ATTRIBUTE_Exceptions:
+	case ATTRIBUTE_Exceptions:
+		return cf.readAttributeException(constant_pool)
 	// case ATTRIBUTE_LineNumberTable:
 	// case ATTRIBUTE_LocalVariableTable:
 	case ATTRIBUTE_SourceFile:
