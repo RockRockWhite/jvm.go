@@ -710,6 +710,38 @@ func (cf *ClassFile) readAttributes(constant_pool ConstantPoolInfo) ([]Attribute
 	return attributes, nil
 }
 
+func (cf *ClassFile) readMember(constant_pool ConstantPoolInfo) (MemberInfo, error) {
+	access_flags, err := cf.readAccessFlags()
+	if err != nil {
+		return MemberInfo{}, err
+	}
+
+	name_index, err := cf.readIndex()
+	if err != nil {
+		return MemberInfo{}, err
+	}
+
+	descriptor_index, err := cf.readIndex()
+	if err != nil {
+		return MemberInfo{}, err
+	}
+
+	fmt.Println("name_index", name_index)
+
+	attributes, err := cf.readAttributes(constant_pool)
+
+	if err != nil {
+		return MemberInfo{}, err
+	}
+
+	return MemberInfo{
+		AccessFlags:     access_flags,
+		NameIndex:       name_index,
+		DescriptorIndex: descriptor_index,
+		Attrubutes:      attributes,
+	}, nil
+}
+
 func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 	var res ClassInfo
 
@@ -765,31 +797,43 @@ func (cf *ClassFile) IntoClassInfo() (ClassInfo, error) {
 		res.Interfaces = interfaces
 	}
 
-	if field_indexes, err := cf.readIndexTable(); err != nil {
+	if fields_len, err := cf.readUInt16(); err != nil {
 		return ClassInfo{}, err
 	} else {
-		fields := make([]FieldInfo, 0, len(field_indexes))
-		for _, index := range field_indexes {
-			fields = append(fields, FieldInfo{
-				NameIndex: index,
-			})
+		fields := make([]FieldInfo, 0, fields_len)
+		for i := 0; i != int(fields_len); i++ {
+			member_info, err := cf.readMember(res.ConstantPool)
+			if err != nil {
+				return ClassInfo{}, err
+			}
+
+			fields = append(fields, FieldInfo(member_info))
 		}
 
 		res.Fields = fields
 	}
 
-	if method_indexes, err := cf.readIndexTable(); err != nil {
+	if methods_len, err := cf.readUInt16(); err != nil {
 		return ClassInfo{}, err
 	} else {
-		methods := make([]MethodInfo, 0, len(method_indexes))
-		for _, index := range method_indexes {
-			methods = append(methods, MethodInfo{
-				NameIndex: index,
-			})
+		methods := make([]MethodInfo, 0, methods_len)
+		for i := 0; i != int(methods_len); i++ {
+			member_info, err := cf.readMember(res.ConstantPool)
+			if err != nil {
+				return ClassInfo{}, err
+			}
+
+			methods = append(methods, MethodInfo(member_info))
 		}
 
 		res.Methods = methods
 	}
+
+	attributes, err := cf.readAttributes(res.ConstantPool)
+	if err != nil {
+		return ClassInfo{}, err
+	}
+	res.Attributes = attributes
 
 	return res, nil
 }
