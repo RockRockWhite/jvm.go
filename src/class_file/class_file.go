@@ -538,6 +538,42 @@ func (cf *ClassFile) readAttributeException(constant_pool ConstantPoolInfo) (Att
 	}, nil
 }
 
+func (cf *ClassFile) readAttributeLineNumber() (AttributeInfo, error) {
+	// read length, unused
+	_, err := cf.readUInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	// read exceptions
+	line_number_len, err := cf.readUInt16()
+	if err != nil {
+		return nil, err
+	}
+
+	line_numbers := make([]LineNumberTableEntry, 0, line_number_len)
+	for i := 0; i != int(line_number_len); i += 1 {
+		start_pc, err := cf.readUInt16()
+		if err != nil {
+			return nil, err
+		}
+
+		line_number, err := cf.readUInt16()
+		if err != nil {
+			return nil, err
+		}
+
+		line_numbers = append(line_numbers, LineNumberTableEntry{
+			StartPC:    start_pc,
+			LineNumber: line_number,
+		})
+	}
+
+	return AttributeLineNumber{
+		LineNumberTable: line_numbers,
+	}, nil
+}
+
 func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
 
 	// read attribute name
@@ -561,7 +597,8 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 		return cf.readAttributeDeprecated()
 	case ATTRIBUTE_Exceptions:
 		return cf.readAttributeException(constant_pool)
-	// case ATTRIBUTE_LineNumberTable:
+	case ATTRIBUTE_LineNumberTable:
+		return cf.readAttributeLineNumber()
 	// case ATTRIBUTE_LocalVariableTable:
 	case ATTRIBUTE_SourceFile:
 		return cf.readAttributeSourceFile(constant_pool)

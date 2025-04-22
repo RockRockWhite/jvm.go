@@ -48,3 +48,12 @@ type AttributeCode struct {
 type AttributeExceptions struct {
 	Exceptions []string
 }
+
+type LineNumberTableEntry struct {
+	StartPC    uint16
+	LineNumber uint16
+}
+
+type AttributeLineNumber struct {
+	LineNumberTable []LineNumberTableEntry
+}
