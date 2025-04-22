@@ -57,3 +57,19 @@ type LineNumberTableEntry struct {
 type AttributeLineNumber struct {
 	LineNumberTable []LineNumberTableEntry
 }
+
+type LocalVariableTableEntry struct {
+	StartPC    uint16
+	Length     uint16
+	Name       string
+	Descriptor string
+	Index      uint16
+}
+
+type AttributeLocalVariable struct {
+	LocalVariableTable []LocalVariableTableEntry
+}
+
+type AttributeUnknown struct {
+	Data []byte
+}
