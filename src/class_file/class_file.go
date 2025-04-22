@@ -391,7 +391,7 @@ func (cf *ClassFile) readAttributeSourceFile(constant_pool ConstantPoolInfo) (At
 		return nil, err
 	}
 
-	constant_string_ptr, ok := constant_pool.Entries[source_file_index].(*ConstantUtf8)
+	constant_string_ptr, ok := constant_pool.Entries[source_file_index].(ConstantUtf8)
 	if !ok {
 		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for SourceFile attribute")
 	}
@@ -420,23 +420,23 @@ func (cf *ClassFile) readAttributeConstantValue(constant_pool ConstantPoolInfo) 
 	switch constant_pool.Entries[constant_value_index].(type) {
 	case ConstantInt:
 		return AttributeConstantValue{
-			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantInt).Value,
+			ConstantValue: constant_pool.Entries[constant_value_index].(ConstantInt).Value,
 		}, nil
 	case ConstantFloat:
 		return AttributeConstantValue{
-			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantFloat).Value,
+			ConstantValue: constant_pool.Entries[constant_value_index].(ConstantFloat).Value,
 		}, nil
 	case ConstantLong:
 		return AttributeConstantValue{
-			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantLong).Value,
+			ConstantValue: constant_pool.Entries[constant_value_index].(ConstantLong).Value,
 		}, nil
 	case ConstantDouble:
 		return AttributeConstantValue{
-			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantDouble).Value,
+			ConstantValue: constant_pool.Entries[constant_value_index].(ConstantDouble).Value,
 		}, nil
 	case ConstantString:
 		return AttributeConstantValue{
-			ConstantValue: constant_pool.Entries[constant_value_index].(*ConstantString).GetString(constant_pool),
+			ConstantValue: constant_pool.Entries[constant_value_index].(ConstantString).EntryIndex,
 		}, nil
 	default:
 		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for ConstantValue attribute")
@@ -525,7 +525,7 @@ func (cf *ClassFile) readAttributeException(constant_pool ConstantPoolInfo) (Att
 			return nil, err
 		}
 
-		constant_class, ok := constant_pool.Entries[expection_name_index].(*ConstantClass)
+		constant_class, ok := constant_pool.Entries[expection_name_index].(ConstantClass)
 		if !ok {
 			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for Exception attribute")
 		}
@@ -663,11 +663,10 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 		return nil, err
 	}
 
-	constant_utf8_ptr, ok := constant_pool.Entries[name_index].(*ConstantUtf8)
+	constant_utf8_ptr, ok := constant_pool.Entries[name_index].(ConstantUtf8)
 	if !ok {
 		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for attribute name")
 	}
-
 	attribute_type := AttributeType(constant_utf8_ptr.Str)
 	switch attribute_type {
 	case ATTRIBUTE_Code:
@@ -687,7 +686,7 @@ func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (Attribut
 	case ATTRIBUTE_Synthetic:
 		return cf.readAttributeSynthetic()
 	default:
-		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid attribute type %s", attribute_type)
+		return cf.readAttributeUnknown()
 	}
 }
 
@@ -725,8 +724,6 @@ func (cf *ClassFile) readMember(constant_pool ConstantPoolInfo) (MemberInfo, err
 	if err != nil {
 		return MemberInfo{}, err
 	}
-
-	fmt.Println("name_index", name_index)
 
 	attributes, err := cf.readAttributes(constant_pool)
 
