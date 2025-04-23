@@ -10,6 +10,7 @@ type ClassReader struct {
 	magic         uint32
 	minor_version uint16
 	major_version uint16
+	constant_pool ConstantPoolInfo
 }
 
 func (r *ClassReader) ReadMagic() *ClassReader {
@@ -30,6 +31,17 @@ func (r *ClassReader) ReadVersion() *ClassReader {
 	if !compatiable {
 		r.byte_reader.errors = append(r.byte_reader.errors, fmt.Errorf("java.lang.UnsupportedClassVersionError"))
 	}
+
+	return r
+}
+
+func (r *ClassReader) ReadConstantPool() *ClassReader {
+	constant_pool_reader := NewConstantPoolReader(r.byte_reader.reader)
+
+	constant_pool, errors := constant_pool_reader.ReadCount().ReadConstantPoolInfos().BuildConstantPool()
+
+	r.constant_pool = constant_pool
+	r.byte_reader.errors = append(r.byte_reader.errors, errors...)
 
 	return r
 }
