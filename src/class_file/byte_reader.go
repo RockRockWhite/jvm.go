@@ -66,8 +66,8 @@ func (r *ByteReader) readInt32() int32 {
 	return res
 }
 
-func (r *ByteReader) readInt64() uint64 {
-	var res uint64
+func (r *ByteReader) readInt64() int64 {
+	var res int64
 	err := binary.Read(r.reader, binary.BigEndian, &res)
 	r.errors = append(r.errors, err)
 

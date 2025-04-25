@@ -1,6 +1,7 @@
 package class_file
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -15,57 +16,125 @@ func (r *ConstantPoolReader) ReadCount() *ConstantPoolReader {
 	return r
 }
 
+func (r *ConstantPoolReader) readConstantType() ConstantType {
+	tag := r.byte_reader.readUInt8()
+	constant_type := ConstantType(tag)
+	return constant_type
+}
+
+func (r *ConstantPoolReader) readConstantInt() ConstantInfo {
+	value := r.byte_reader.readInt32()
+
+	return ConstantInt{
+		Value: value,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantLong() ConstantInfo {
+	value := r.byte_reader.readInt64()
+
+	return ConstantLong{
+		Value: value,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantFloat() ConstantInfo {
+	value := r.byte_reader.readFloat32()
+
+	return ConstantFloat{
+		Value: value,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantDouble() ConstantInfo {
+	value := r.byte_reader.readFloat64()
+
+	return ConstantDouble{
+		Value: value,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantUtf8() ConstantInfo {
+	size := r.byte_reader.readUInt16()
+	bytes := r.byte_reader.readBytes(uint64(size))
+
+	// convert bytes to string
+	return ConstantUtf8{
+		Str: string(bytes),
+	}
+}
+
+func (r *ConstantPoolReader) readConstantString() ConstantInfo {
+	index := r.byte_reader.readUInt16()
+
+	return ConstantString{
+		EntryIndex: index,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantClass() ConstantInfo {
+	index := r.byte_reader.readUInt16()
+
+	return ConstantClass{
+		EntryIndex: index,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantNameAndType() ConstantInfo {
+	name_index := r.byte_reader.readUInt16()
+	descriptor_index := r.byte_reader.readUInt16()
+
+	return ConstantNameAndType{
+		NameEntryIndex:       name_index,
+		DescriptorEntryIndex: descriptor_index,
+	}
+}
+
+func (r *ConstantPoolReader) readConstantMemberRef() ConstantMemberRef {
+	class_index := r.byte_reader.readUInt16()
+	name_and_type_index := r.byte_reader.readUInt16()
+
+	return ConstantMemberRef{
+		ClassEntryIndex:       class_index,
+		NameAndTypeEntryIndex: name_and_type_index,
+	}
+}
+
 func (r *ConstantPoolReader) readConstantInfo() ConstantInfo {
-	// // read constant type tag
-	// tag, err := cf.readUInt8()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// constant_type := ConstantType(tag)
-	// switch constant_type {
-	// case CONSTANT_Class:
-	// 	return cf.readConstantClass()
-	// case CONSTANT_Fieldref:
-	// 	if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
-	// 		return nil, err
-	// 	} else {
-	// 		return NewConstantFieldRef(constant_member_ref), nil
-	// 	}
-	// case CONSTANT_Methodref:
-	// 	if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
-	// 		return nil, err
-	// 	} else {
-	// 		return NewConstantMethodRef(constant_member_ref), nil
-	// 	}
-	// case CONSTANT_InferfaceMethodref:
-	// 	if constant_member_ref, err := cf.readConstantMemberRef(); err != nil {
-	// 		return nil, err
-	// 	} else {
-	// 		return NewConstantInterfaceMethodRef(constant_member_ref), nil
-	// 	}
-	// case CONSTANT_String:
-	// 	return cf.readConstantString()
-	// case CONSTANT_Integer:
-	// 	return cf.readConstantInt()
-	// case CONSTANT_Float:
-	// 	return cf.readConstantFloat()
-	// case CONSTANT_Long:
-	// 	return cf.readConstantLong()
-	// case CONSTANT_Double:
-	// 	return cf.readConstantDouble()
-	// case CONSTANT_NameAndType:
-	// 	return cf.readConstantNameAndType()
-	// case CONSTANT_Utf8:
-	// 	return cf.readConstantUtf8()
-	// case CONSTANT_MethodHandle:
-	// case CONSTANT_MethodType:
-	// case CONSTANT_InvokeDynamic:
-	// default:
-	// 	return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type %d", tag)
-	// }
-
-	return nil
+	constant_type := r.readConstantType()
+	switch constant_type {
+	case CONSTANT_Class:
+		return r.readConstantClass()
+	case CONSTANT_Fieldref:
+		return NewConstantFieldRef(r.readConstantMemberRef())
+	case CONSTANT_Methodref:
+		return NewConstantMethodRef(r.readConstantMemberRef())
+	case CONSTANT_InferfaceMethodref:
+		return NewConstantInterfaceMethodRef(r.readConstantMemberRef())
+	case CONSTANT_String:
+		return r.readConstantString()
+	case CONSTANT_Integer:
+		return r.readConstantInt()
+	case CONSTANT_Float:
+		return r.readConstantFloat()
+	case CONSTANT_Long:
+		return r.readConstantLong()
+	case CONSTANT_Double:
+		return r.readConstantDouble()
+	case CONSTANT_NameAndType:
+		return r.readConstantNameAndType()
+	case CONSTANT_Utf8:
+		return r.readConstantUtf8()
+	case CONSTANT_MethodHandle:
+		fallthrough
+	case CONSTANT_MethodType:
+		fallthrough
+	case CONSTANT_InvokeDynamic:
+		fallthrough
+	default:
+		r.byte_reader.errors = append(r.byte_reader.errors, fmt.Errorf("java.lang.ClassFormatError: invalid constant type %d", constant_type))
+		return nil
+	}
 }
 
 func (r *ConstantPoolReader) ReadConstantPoolInfos() *ConstantPoolReader {
@@ -80,7 +149,7 @@ func (r *ConstantPoolReader) ReadConstantPoolInfos() *ConstantPoolReader {
 	// [1, cnt)
 	for i := 1; i != int(r.constant_pool_cnt); i++ {
 		constant_info := r.readConstantInfo()
-		entries = append(entries, constant_info)
+		entries = append(entries, &constant_info)
 
 		// long and double take up two slots
 		// append one empty slot for convenience
