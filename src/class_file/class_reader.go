@@ -58,5 +58,5 @@ func NewClassReader(reader io.Reader) ClassReader {
 
 func ReadClassInfo(reader io.Reader) (ClassInfo, error) {
 	class_reader := NewClassReader(reader)
-	return class_reader.ReadMagic().ReadVersion().BuildClass()
+	return class_reader.ReadMagic().ReadVersion().ReadConstantPool().BuildClass()
 }

@@ -28,6 +28,7 @@ type AttributeSourceFile struct {
 
 type AttributeConstantValue struct {
 	ConstantValue any
+	ConstantType  ConstantType
 }
 
 type ExpectionTableEntry struct {
