@@ -89,251 +89,143 @@ func (r *AttributeReader) readAttributeConstantValue() AttributeInfo {
 	}
 }
 
-// func (cf *ClassFile) readExpectionTableEntry() (ExpectionTableEntry, error) {
-// 	return ExpectionTableEntry{}, nil
-// }
+func (r *AttributeReader) readExpectionTableEntry() ExpectionTableEntry {
+	start_pc := r.byte_reader.readUInt16()
+	end_pc := r.byte_reader.readUInt16()
+	handler_pc := r.byte_reader.readUInt16()
+	catch_type := r.byte_reader.readUInt16()
 
-// func (cf *ClassFile) readAttributeCode(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
-// 	// read length, unused
-// 	_, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	return ExpectionTableEntry{
+		StartPC:   start_pc,
+		EndPC:     end_pc,
+		HandlerPC: handler_pc,
+		CatchType: catch_type,
+	}
+}
 
-// 	// read max_stack
-// 	max_stack, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (r *AttributeReader) readAttributeCode() AttributeInfo {
+	// read length, unused
+	_ = r.byte_reader.readUInt32()
 
-// 	max_locals, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	max_stack := r.byte_reader.readUInt16()
+	max_locals := r.byte_reader.readUInt16()
 
-// 	code_len, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	code := make([]byte, code_len)
+	code_len := r.byte_reader.readUInt32()
+	code := r.byte_reader.readBytes(uint64(code_len))
 
-// 	if _, err := io.ReadFull(cf.reader, code); err != nil {
-// 		return nil, err
-// 	}
+	exception_table_len := r.byte_reader.readUInt16()
+	exception_table := make([]ExpectionTableEntry, 0, exception_table_len)
+	for i := 0; i != int(exception_table_len); i++ {
+		exception_table = append(exception_table, r.readExpectionTableEntry())
+	}
 
-// 	exception_table_len, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	attributes_count := r.byte_reader.readUInt16()
+	attributes := make([]AttributeInfo, 0, attributes_count)
+	for i := 0; i != int(attributes_count); i++ {
+		inner_attribute_reader := NewAttributeReader(r.byte_reader.reader, r.constant_pool)
+		innter_attribute, errors := inner_attribute_reader.ReadAttributeName().ReadAttributeInfo().Build()
+		r.byte_reader.errors = append(r.byte_reader.errors, errors...)
 
-// 	exception_table := make([]ExpectionTableEntry, 0, exception_table_len)
-// 	for i := 0; i != int(exception_table_len); i++ {
-// 		expection_table_entry, err := cf.readExpectionTableEntry()
-// 		if err != nil {
-// 			return nil, nil
-// 		}
-// 		exception_table = append(exception_table, expection_table_entry)
-// 	}
+		attributes = append(attributes, innter_attribute)
+	}
 
-// 	attributes, err := cf.readAttributes(constant_pool)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	return AttributeCode{
+		MaxStack:       max_stack,
+		MaxLocals:      max_locals,
+		Code:           code,
+		ExpectionTable: exception_table,
+		Attributes:     attributes,
+	}
+}
 
-// 	return AttributeCode{
-// 		MaxStack:       max_stack,
-// 		MaxLocals:      max_locals,
-// 		Code:           code,
-// 		ExpectionTable: exception_table,
-// 		Attributes:     attributes,
-// 	}, nil
-// }
+func (r *AttributeReader) readAttributeException() AttributeInfo {
+	// read length, unused
+	_ = r.byte_reader.readUInt32()
 
-// func (cf *ClassFile) readAttributeException(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
-// 	// read length, unused
-// 	_, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	exceptions_len := r.byte_reader.readUInt16()
+	exceptions := make([]string, 0, exceptions_len)
 
-// 	// read exceptions
-// 	exceptions_len, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	exceptions := make([]string, 0, exceptions_len)
+	for i := 0; i != int(exceptions_len); i++ {
 
-// 	for i := 0; i != int(exceptions_len); i++ {
+		expection_name_index := r.byte_reader.readUInt16()
+		expection_name, err := r.constant_pool.GetClass(expection_name_index)
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
 
-// 		expection_name_index, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+		exceptions = append(exceptions, expection_name)
+	}
 
-// 		constant_class, ok := constant_pool.Entries[expection_name_index].(ConstantClass)
-// 		if !ok {
-// 			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for Exception attribute")
-// 		}
+	return AttributeExceptions{
+		Exceptions: exceptions,
+	}
+}
 
-// 		exceptions = append(exceptions, constant_class.GetClassName(constant_pool))
-// 	}
+func (r *AttributeReader) readAttributeLineNumber() AttributeInfo {
+	// read length, unused
+	_ = r.byte_reader.readUInt32()
 
-// 	return AttributeExceptions{
-// 		Exceptions: exceptions,
-// 	}, nil
-// }
+	line_number_len := r.byte_reader.readUInt16()
+	line_numbers := make([]LineNumberTableEntry, 0, line_number_len)
 
-// func (cf *ClassFile) readAttributeLineNumber() (AttributeInfo, error) {
-// 	// read length, unused
-// 	_, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	for i := 0; i != int(line_number_len); i += 1 {
+		start_pc := r.byte_reader.readUInt16()
+		line_number := r.byte_reader.readUInt16()
 
-// 	line_number_len, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+		line_numbers = append(line_numbers, LineNumberTableEntry{
+			StartPC:    start_pc,
+			LineNumber: line_number,
+		})
+	}
 
-// 	line_numbers := make([]LineNumberTableEntry, 0, line_number_len)
-// 	for i := 0; i != int(line_number_len); i += 1 {
-// 		start_pc, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	return AttributeLineNumber{
+		LineNumberTable: line_numbers,
+	}
+}
 
-// 		line_number, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+func (r *AttributeReader) readAttributeLocalVariable() AttributeInfo {
+	// read length, unused
+	_ = r.byte_reader.readUInt32()
 
-// 		line_numbers = append(line_numbers, LineNumberTableEntry{
-// 			StartPC:    start_pc,
-// 			LineNumber: line_number,
-// 		})
-// 	}
+	local_variable_len := r.byte_reader.readUInt16()
+	local_variables := make([]LocalVariableTableEntry, 0, local_variable_len)
 
-// 	return AttributeLineNumber{
-// 		LineNumberTable: line_numbers,
-// 	}, nil
-// }
+	for i := 0; i != int(local_variable_len); i += 1 {
+		start_pc := r.byte_reader.readUInt16()
+		length := r.byte_reader.readUInt16()
 
-// func (cf *ClassFile) readAttributeLocalVariable(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
-// 	// read length, unused
-// 	_, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+		name_index := r.byte_reader.readUInt16()
+		name, err := r.constant_pool.GetUtf8(name_index)
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
 
-// 	local_variable_len, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+		descriptor_index := r.byte_reader.readUInt16()
+		descriptor, err := r.constant_pool.GetUtf8(descriptor_index)
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
 
-// 	local_variables := make([]LocalVariableTableEntry, 0, local_variable_len)
-// 	for i := 0; i != int(local_variable_len); i += 1 {
-// 		start_pc, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+		index := r.byte_reader.readUInt16()
 
-// 		length, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+		local_variables = append(local_variables, LocalVariableTableEntry{
+			StartPC:    start_pc,
+			Length:     length,
+			Name:       name,
+			Descriptor: descriptor,
+			Index:      index,
+		})
+	}
 
-// 		name_index, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	return AttributeLocalVariable{
+		LocalVariableTable: local_variables,
+	}
+}
 
-// 		name_constant_utf8_ptr, ok := constant_pool.Entries[name_index].(*ConstantUtf8)
-// 		if !ok {
-// 			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for LocalVariable attribute")
-// 		}
+func (r *AttributeReader) readAttributeUnknown() AttributeInfo {
+	length := r.byte_reader.readUInt32()
 
-// 		descriptor_index, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
+	// just read and store all the bytes
+	data := r.byte_reader.readBytes(uint64(length))
 
-// 		descriptor_constant_utf8_ptr, ok := constant_pool.Entries[descriptor_index].(*ConstantUtf8)
-// 		if !ok {
-// 			return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for LocalVariable attribute")
-// 		}
-
-// 		index, err := cf.readUInt16()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		local_variables = append(local_variables, LocalVariableTableEntry{
-// 			StartPC:    start_pc,
-// 			Length:     length,
-// 			Name:       name_constant_utf8_ptr.Str,
-// 			Descriptor: descriptor_constant_utf8_ptr.Str,
-// 			Index:      index,
-// 		})
-// 	}
-
-// 	return AttributeLocalVariable{
-// 		LocalVariableTable: local_variables,
-// 	}, nil
-// }
-
-// func (cf *ClassFile) readAttributeUnknown() (AttributeInfo, error) {
-// 	// read length, unused
-// 	length, err := cf.readUInt32()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// read attribute data
-// 	data := make([]byte, length)
-// 	io.ReadFull(cf.reader, data)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return AttributeUnknown{
-// 		Data: data,
-// 	}, nil
-// }
-
-// func (cf *ClassFile) readAttributeInfo(constant_pool ConstantPoolInfo) (AttributeInfo, error) {
-
-// 	// read attribute name
-// 	name_index, err := cf.readUInt16()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	constant_utf8_ptr, ok := constant_pool.Entries[name_index].(ConstantUtf8)
-// 	if !ok {
-// 		return nil, fmt.Errorf("java.lang.ClassFormatError: invalid constant type for attribute name")
-// 	}
-// 	attribute_type := AttributeType(constant_utf8_ptr.Str)
-// 	switch attribute_type {
-// 	case ATTRIBUTE_Code:
-// 		return cf.readAttributeCode(constant_pool)
-// 	case ATTRIBUTE_ConstantValue:
-// 		return cf.readAttributeConstantValue(constant_pool)
-// 	case ATTRIBUTE_Deprecated:
-// 		return cf.readAttributeDeprecated()
-// 	case ATTRIBUTE_Exceptions:
-// 		return cf.readAttributeException(constant_pool)
-// 	case ATTRIBUTE_LineNumberTable:
-// 		return cf.readAttributeLineNumber()
-// 	case ATTRIBUTE_LocalVariableTable:
-// 		return cf.readAttributeLocalVariable(constant_pool)
-// 	case ATTRIBUTE_SourceFile:
-// 		return cf.readAttributeSourceFile(constant_pool)
-// 	case ATTRIBUTE_Synthetic:
-// 		return cf.readAttributeSynthetic()
-// 	default:
-// 		return cf.readAttributeUnknown()
-// 	}
-// }
+	return AttributeUnknown{
+		Data: data,
+	}
+}
 
 func (r *AttributeReader) ReadAttributeName() *AttributeReader {
 	name_index := r.byte_reader.readUInt16()
@@ -349,42 +241,26 @@ func (r *AttributeReader) ReadAttributeName() *AttributeReader {
 func (r *AttributeReader) ReadAttributeInfo() *AttributeReader {
 	switch r.attribute_type {
 	case ATTRIBUTE_Code:
+		r.attribute_info = r.readAttributeCode()
 	case ATTRIBUTE_ConstantValue:
 		r.attribute_info = r.readAttributeConstantValue()
 	case ATTRIBUTE_Deprecated:
 		r.attribute_info = r.readAttributeDeprecated()
 	case ATTRIBUTE_Exceptions:
-		r.attribute_info = r.readAttributeSynthetic()
+		r.attribute_info = r.readAttributeException()
 	case ATTRIBUTE_LineNumberTable:
+		r.attribute_info = r.readAttributeLineNumber()
 	case ATTRIBUTE_LocalVariableTable:
+		r.attribute_info = r.readAttributeLocalVariable()
 	case ATTRIBUTE_SourceFile:
 		r.attribute_info = r.readAttributeSourceFile()
 	case ATTRIBUTE_Synthetic:
+		r.attribute_info = r.readAttributeSynthetic()
 	default:
+		r.attribute_info = r.readAttributeUnknown()
 	}
 
 	return r
-
-	// switch attribute_type {
-	// case ATTRIBUTE_Code:
-	// 	return cf.readAttributeCode(constant_pool)
-	// case ATTRIBUTE_ConstantValue:
-	// 	return cf.readAttributeConstantValue(constant_pool)
-	// case ATTRIBUTE_Deprecated:
-	// 	return cf.readAttributeDeprecated()
-	// case ATTRIBUTE_Exceptions:
-	// 	return cf.readAttributeException(constant_pool)
-	// case ATTRIBUTE_LineNumberTable:
-	// 	return cf.readAttributeLineNumber()
-	// case ATTRIBUTE_LocalVariableTable:
-	// 	return cf.readAttributeLocalVariable(constant_pool)
-	// case ATTRIBUTE_SourceFile:
-	// 	return cf.readAttributeSourceFile(constant_pool)
-	// case ATTRIBUTE_Synthetic:
-	// 	return cf.readAttributeSynthetic()
-	// default:
-	// 	return cf.readAttributeUnknown()
-	// }
 }
 
 func (r *AttributeReader) Build() (AttributeInfo, []error) {

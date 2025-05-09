@@ -58,6 +58,7 @@ type ConstantClass struct {
 	EntryIndex uint16
 }
 
+// will be deprecated
 func (cc *ConstantClass) GetClassName(constant_pool ConstantPoolInfo) string {
 	constant_utf8, _ := constant_pool.Entries[cc.EntryIndex].(ConstantUtf8)
 	return constant_utf8.Str
@@ -200,4 +201,14 @@ func (cp *ConstantPoolInfo) GetDouble(idx uint16) (float64, error) {
 	}
 
 	return constant_value_ptr.Value, nil
+}
+
+func (cp *ConstantPoolInfo) GetClass(idx uint16) (string, error) {
+	constant_class_ptr, ok := cp.Entries[idx].(*ConstantClass)
+	if !ok {
+		return "", fmt.Errorf("index %d in is not class", idx)
+	}
+
+	class_name, err := cp.GetUtf8(constant_class_ptr.EntryIndex)
+	return class_name, err
 }
