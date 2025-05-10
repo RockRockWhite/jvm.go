@@ -44,11 +44,15 @@ func (r *ClassReader) ReadVersion() *ClassReader {
 
 func (r *ClassReader) ReadConstantPool() *ClassReader {
 	constant_pool_reader := NewConstantPoolReader(r.byte_reader.reader)
-
-	constant_pool, errors := constant_pool_reader.ReadCount().ReadConstantPoolInfos().BuildConstantPool()
+	constant_pool, err := constant_pool_reader.
+		ReadConstantPoolInfos().
+		BuildConstantPool()
 
 	r.constant_pool = constant_pool
-	r.byte_reader.errors = append(r.byte_reader.errors, errors...)
+
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	return r
 }
@@ -61,7 +65,10 @@ func (r *ClassReader) ReadAccessFlags() *ClassReader {
 func (r *ClassReader) ReadThisClass() *ClassReader {
 	this_class_idx := r.byte_reader.readUInt16()
 	class_name, err := r.constant_pool.GetClass(this_class_idx)
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	r.this_class = class_name
 	return r
@@ -70,8 +77,9 @@ func (r *ClassReader) ReadThisClass() *ClassReader {
 func (r *ClassReader) ReadSuperClass() *ClassReader {
 	this_class_idx := r.byte_reader.readUInt16()
 	class_name, err := r.constant_pool.GetClass(this_class_idx)
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
-
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 	r.super_class = class_name
 	return r
 }
@@ -83,7 +91,10 @@ func (r *ClassReader) ReadInterfaces() *ClassReader {
 	for i := 0; i != int(interfaces_count); i++ {
 		interface_idx := r.byte_reader.readUInt16()
 		interface_name, err := r.constant_pool.GetClass(interface_idx)
-		r.byte_reader.errors = append(r.byte_reader.errors, err)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
+
 		interfaces = append(interfaces, interface_name)
 	}
 	r.interfaces = interfaces
@@ -98,12 +109,14 @@ func (r *ClassReader) readAttributes() []AttributeInfo {
 	for i := 0; i != int(attributes_count); i++ {
 
 		attribute_reader := NewAttributeReader(r.byte_reader.reader, r.constant_pool)
-		attribute, errors := attribute_reader.
+		attribute, err := attribute_reader.
 			ReadAttributeName().
 			ReadAttributeInfo().
 			Build()
 
-		r.byte_reader.errors = append(r.byte_reader.errors, errors...)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
 		attributes = append(attributes, attribute)
 	}
 
@@ -116,12 +129,15 @@ func (r *ClassReader) readMember() MemberInfo {
 
 	name_index := r.byte_reader.readUInt16()
 	name, err := r.constant_pool.GetUtf8(name_index)
-
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	descriptor_index := r.byte_reader.readUInt16()
 	descriptor, err := r.constant_pool.GetUtf8(descriptor_index)
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	attributes := r.readAttributes()
 
@@ -169,10 +185,10 @@ func (r *ClassReader) BuildClass() (ClassInfo, error) {
 	if len(r.byte_reader.errors) != 0 {
 		// convet all errors to a single error
 		error_msg := ""
-		for idx, err := range r.byte_reader.errors {
-			error_msg += fmt.Sprintf("%d: %v; ", idx, err)
+		for _, err := range r.byte_reader.errors {
+			error_msg += fmt.Sprintf("%v; ", err)
 		}
-		return ClassInfo{}, fmt.Errorf("java.lang.ClassFormatError: %v", r.byte_reader.errors)
+		return ClassInfo{}, fmt.Errorf("{ %v }", error_msg)
 	}
 
 	return ClassInfo{

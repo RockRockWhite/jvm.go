@@ -11,11 +11,6 @@ type ConstantPoolReader struct {
 	constant_pool     ConstantPoolInfo
 }
 
-func (r *ConstantPoolReader) ReadCount() *ConstantPoolReader {
-	r.constant_pool_cnt = r.byte_reader.readUInt16()
-	return r
-}
-
 func (r *ConstantPoolReader) readConstantType() ConstantType {
 	tag := r.byte_reader.readUInt8()
 	constant_type := ConstantType(tag)
@@ -149,7 +144,7 @@ func (r *ConstantPoolReader) ReadConstantPoolInfos() *ConstantPoolReader {
 	// [1, cnt)
 	for i := 1; i != int(r.constant_pool_cnt); i++ {
 		constant_info := r.readConstantInfo()
-		entries = append(entries, &constant_info)
+		entries = append(entries, constant_info)
 
 		// long and double take up two slots
 		// append one empty slot for convenience
@@ -164,8 +159,17 @@ func (r *ConstantPoolReader) ReadConstantPoolInfos() *ConstantPoolReader {
 	return r
 }
 
-func (r *ConstantPoolReader) BuildConstantPool() (ConstantPoolInfo, []error) {
-	return ConstantPoolInfo{}, r.byte_reader.errors
+func (r *ConstantPoolReader) BuildConstantPool() (ConstantPoolInfo, error) {
+	if len(r.byte_reader.errors) != 0 {
+		// convet all errors to a single error
+		error_msg := ""
+		for _, err := range r.byte_reader.errors {
+			error_msg += fmt.Sprintf("%v; ", err)
+		}
+		return ConstantPoolInfo{}, fmt.Errorf("{ %v }", error_msg)
+	}
+
+	return r.constant_pool, nil
 }
 
 func NewConstantPoolReader(reader io.Reader) ConstantPoolReader {

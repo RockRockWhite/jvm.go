@@ -45,7 +45,9 @@ func (r *AttributeReader) readAttributeSourceFile() AttributeInfo {
 	source_file_index := r.byte_reader.readUInt16()
 	source_file_str, err := r.constant_pool.GetUtf8(source_file_index)
 
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	return AttributeSourceFile{
 		SourceFile: source_file_str,
@@ -56,7 +58,7 @@ func (r *AttributeReader) readAttributeConstantValue() AttributeInfo {
 	length := r.byte_reader.readUInt32()
 
 	if length != 2 {
-		r.byte_reader.errors = append(r.byte_reader.errors, fmt.Errorf("invalid length for SourceFile attribute"))
+		r.byte_reader.errors = append(r.byte_reader.errors, fmt.Errorf("invalid length for ConstantValue attribute"))
 		return nil
 	}
 
@@ -82,7 +84,9 @@ func (r *AttributeReader) readAttributeConstantValue() AttributeInfo {
 		err = fmt.Errorf("invalid constant type for ConstantValue attribute")
 	}
 
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 	return AttributeConstantValue{
 		ConstantValue: value,
 		ConstantType:  constant_type,
@@ -123,10 +127,16 @@ func (r *AttributeReader) readAttributeCode() AttributeInfo {
 	attributes := make([]AttributeInfo, 0, attributes_count)
 	for i := 0; i != int(attributes_count); i++ {
 		inner_attribute_reader := NewAttributeReader(r.byte_reader.reader, r.constant_pool)
-		innter_attribute, errors := inner_attribute_reader.ReadAttributeName().ReadAttributeInfo().Build()
-		r.byte_reader.errors = append(r.byte_reader.errors, errors...)
+		inner_attribute, err := inner_attribute_reader.
+			ReadAttributeName().
+			ReadAttributeInfo().
+			Build()
 
-		attributes = append(attributes, innter_attribute)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
+
+		attributes = append(attributes, inner_attribute)
 	}
 
 	return AttributeCode{
@@ -149,7 +159,9 @@ func (r *AttributeReader) readAttributeException() AttributeInfo {
 
 		expection_name_index := r.byte_reader.readUInt16()
 		expection_name, err := r.constant_pool.GetClass(expection_name_index)
-		r.byte_reader.errors = append(r.byte_reader.errors, err)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
 
 		exceptions = append(exceptions, expection_name)
 	}
@@ -194,11 +206,15 @@ func (r *AttributeReader) readAttributeLocalVariable() AttributeInfo {
 
 		name_index := r.byte_reader.readUInt16()
 		name, err := r.constant_pool.GetUtf8(name_index)
-		r.byte_reader.errors = append(r.byte_reader.errors, err)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
 
 		descriptor_index := r.byte_reader.readUInt16()
 		descriptor, err := r.constant_pool.GetUtf8(descriptor_index)
-		r.byte_reader.errors = append(r.byte_reader.errors, err)
+		if err != nil {
+			r.byte_reader.errors = append(r.byte_reader.errors, err)
+		}
 
 		index := r.byte_reader.readUInt16()
 
@@ -231,7 +247,10 @@ func (r *AttributeReader) ReadAttributeName() *AttributeReader {
 	name_index := r.byte_reader.readUInt16()
 
 	name_str, err := r.constant_pool.GetUtf8(name_index)
-	r.byte_reader.errors = append(r.byte_reader.errors, err)
+
+	if err != nil {
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+	}
 
 	r.attribute_type = AttributeType(name_str)
 
@@ -263,8 +282,17 @@ func (r *AttributeReader) ReadAttributeInfo() *AttributeReader {
 	return r
 }
 
-func (r *AttributeReader) Build() (AttributeInfo, []error) {
-	return r.attribute_info, r.byte_reader.errors
+func (r *AttributeReader) Build() (AttributeInfo, error) {
+	if len(r.byte_reader.errors) != 0 {
+		// convet all errors to a single error
+		error_msg := ""
+		for _, err := range r.byte_reader.errors {
+			error_msg += fmt.Sprintf("%v; ", err)
+		}
+		return nil, fmt.Errorf("{ %v }", error_msg)
+	}
+
+	return r.attribute_info, nil
 }
 
 func NewAttributeReader(reader io.Reader, constant_pool ConstantPoolInfo) AttributeReader {

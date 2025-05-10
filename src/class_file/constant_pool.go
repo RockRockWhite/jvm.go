@@ -122,27 +122,27 @@ type ConstantPoolInfo struct {
 
 func (cp *ConstantPoolInfo) GetType(idx uint16) ConstantType {
 	switch cp.Entries[idx].(type) {
-	case *ConstantClass:
+	case ConstantClass:
 		return CONSTANT_Class
-	case *ConstantFieldRef:
+	case ConstantFieldRef:
 		return CONSTANT_Fieldref
-	case *ConstantMethodRef:
+	case ConstantMethodRef:
 		return CONSTANT_Methodref
-	case *ConstantInterfaceMethodRef:
+	case ConstantInterfaceMethodRef:
 		return CONSTANT_InferfaceMethodref
-	case *ConstantString:
+	case ConstantString:
 		return CONSTANT_String
-	case *ConstantInt:
+	case ConstantInt:
 		return CONSTANT_Integer
-	case *ConstantFloat:
+	case ConstantFloat:
 		return CONSTANT_Float
-	case *ConstantLong:
+	case ConstantLong:
 		return CONSTANT_Long
-	case *ConstantDouble:
+	case ConstantDouble:
 		return CONSTANT_Double
-	case *ConstantNameAndType:
+	case ConstantNameAndType:
 		return CONSTANT_NameAndType
-	case *ConstantUtf8:
+	case ConstantUtf8:
 		return CONSTANT_Utf8
 	default:
 		return CONSTANT_Unexpected
@@ -150,65 +150,65 @@ func (cp *ConstantPoolInfo) GetType(idx uint16) ConstantType {
 }
 
 func (cp *ConstantPoolInfo) GetUtf8(idx uint16) (string, error) {
-	constant_utf8_ptr, ok := cp.Entries[idx].(*ConstantUtf8)
+	constant_utf8, ok := cp.Entries[idx].(ConstantUtf8)
 	if !ok {
 		return "", fmt.Errorf("index %d in is not utf8", idx)
 	}
 
-	return constant_utf8_ptr.Str, nil
+	return constant_utf8.Str, nil
 }
 
 func (cp *ConstantPoolInfo) GetString(idx uint16) (string, error) {
-	constant_str_ptr, ok := cp.Entries[idx].(*ConstantString)
+	constant_str, ok := cp.Entries[idx].(ConstantString)
 	if !ok {
 		return "", fmt.Errorf("index %d in is not utf8", idx)
 	}
 
-	return cp.GetUtf8(constant_str_ptr.EntryIndex)
+	return cp.GetUtf8(constant_str.EntryIndex)
 }
 
 func (cp *ConstantPoolInfo) GetInt(idx uint16) (int32, error) {
-	constant_value_ptr, ok := cp.Entries[idx].(*ConstantInt)
+	constant_value, ok := cp.Entries[idx].(ConstantInt)
 	if !ok {
 		return 0, fmt.Errorf("index %d in is not int", idx)
 	}
 
-	return constant_value_ptr.Value, nil
+	return constant_value.Value, nil
 }
 
 func (cp *ConstantPoolInfo) GetLong(idx uint16) (int64, error) {
-	constant_value_ptr, ok := cp.Entries[idx].(*ConstantLong)
+	constant_value, ok := cp.Entries[idx].(ConstantLong)
 	if !ok {
 		return 0, fmt.Errorf("index %d in is not long", idx)
 	}
 
-	return constant_value_ptr.Value, nil
+	return constant_value.Value, nil
 }
 
 func (cp *ConstantPoolInfo) GetFloat(idx uint16) (float32, error) {
-	constant_value_ptr, ok := cp.Entries[idx].(*ConstantFloat)
+	constant_value, ok := cp.Entries[idx].(ConstantFloat)
 	if !ok {
 		return 0, fmt.Errorf("index %d in is not long", idx)
 	}
 
-	return constant_value_ptr.Value, nil
+	return constant_value.Value, nil
 }
 
 func (cp *ConstantPoolInfo) GetDouble(idx uint16) (float64, error) {
-	constant_value_ptr, ok := cp.Entries[idx].(*ConstantDouble)
+	constant_value, ok := cp.Entries[idx].(ConstantDouble)
 	if !ok {
 		return 0, fmt.Errorf("index %d in is not long", idx)
 	}
 
-	return constant_value_ptr.Value, nil
+	return constant_value.Value, nil
 }
 
 func (cp *ConstantPoolInfo) GetClass(idx uint16) (string, error) {
-	constant_class_ptr, ok := cp.Entries[idx].(*ConstantClass)
+	constant_class, ok := cp.Entries[idx].(ConstantClass)
 	if !ok {
 		return "", fmt.Errorf("index %d in is not class", idx)
 	}
 
-	class_name, err := cp.GetUtf8(constant_class_ptr.EntryIndex)
+	class_name, err := cp.GetUtf8(constant_class.EntryIndex)
 	return class_name, err
 }
