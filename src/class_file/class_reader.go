@@ -12,6 +12,8 @@ type ClassReader struct {
 	major_version uint16
 	constant_pool ConstantPoolInfo
 	access_flags  uint16
+	this_class    string
+	super_class   string
 }
 
 func (r *ClassReader) ReadMagic() *ClassReader {
@@ -52,6 +54,24 @@ func (r *ClassReader) ReadAccessFlags() *ClassReader {
 	return r
 }
 
+func (r *ClassReader) ReadThisClass() *ClassReader {
+	this_class_idx := r.byte_reader.readUInt16()
+	class_name, err := r.constant_pool.GetClass(this_class_idx)
+	r.byte_reader.errors = append(r.byte_reader.errors, err)
+
+	r.this_class = class_name
+	return r
+}
+
+func (r *ClassReader) ReadSuperClass() *ClassReader {
+	this_class_idx := r.byte_reader.readUInt16()
+	class_name, err := r.constant_pool.GetClass(this_class_idx)
+	r.byte_reader.errors = append(r.byte_reader.errors, err)
+
+	r.super_class = class_name
+	return r
+}
+
 func (r *ClassReader) BuildClass() (ClassInfo, error) {
 	return ClassInfo{}, nil
 }
@@ -69,5 +89,7 @@ func ReadClassInfo(reader io.Reader) (ClassInfo, error) {
 		ReadVersion().
 		ReadConstantPool().
 		ReadAccessFlags().
+		ReadThisClass().
+		ReadSuperClass().
 		BuildClass()
 }
