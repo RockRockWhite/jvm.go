@@ -1,9 +1,5 @@
 package class_file
 
-type InterfaceInfo struct {
-	NameIndex uint16
-}
-
 type MemberInfo struct {
 	AccessFlags uint16
 	Name        string
