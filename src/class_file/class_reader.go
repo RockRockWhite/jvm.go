@@ -188,7 +188,7 @@ func (r *ClassReader) BuildClass() (ClassInfo, error) {
 		for _, err := range r.byte_reader.errors {
 			error_msg += fmt.Sprintf("%v; ", err)
 		}
-		return ClassInfo{}, fmt.Errorf("{ %v }", error_msg)
+		return ClassInfo{}, fmt.Errorf("java.lang.ClassFormatError: { %v }", error_msg)
 	}
 
 	return ClassInfo{
