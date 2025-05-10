@@ -14,6 +14,7 @@ type ClassReader struct {
 	access_flags  uint16
 	this_class    string
 	super_class   string
+	interfaces    []string
 }
 
 func (r *ClassReader) ReadMagic() *ClassReader {
@@ -72,6 +73,21 @@ func (r *ClassReader) ReadSuperClass() *ClassReader {
 	return r
 }
 
+func (r *ClassReader) ReadInterfaces() *ClassReader {
+	interfaces_count := r.byte_reader.readUInt16()
+	interfaces := make([]string, 0, interfaces_count)
+
+	for i := 0; i != int(interfaces_count); i++ {
+		interface_idx := r.byte_reader.readUInt16()
+		interface_name, err := r.constant_pool.GetClass(interface_idx)
+		r.byte_reader.errors = append(r.byte_reader.errors, err)
+		interfaces = append(interfaces, interface_name)
+	}
+	r.interfaces = interfaces
+
+	return r
+}
+
 func (r *ClassReader) BuildClass() (ClassInfo, error) {
 	return ClassInfo{}, nil
 }
@@ -91,5 +107,6 @@ func ReadClassInfo(reader io.Reader) (ClassInfo, error) {
 		ReadAccessFlags().
 		ReadThisClass().
 		ReadSuperClass().
+		ReadInterfaces().
 		BuildClass()
 }
