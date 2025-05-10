@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -21,8 +22,7 @@ func Run() error {
 		return err
 	}
 
-	cf := class_file.NewClassFile(data)
-	class_info, err := cf.IntoClassInfo()
+	class_info, err := class_file.ReadClassInfo(bytes.NewReader(data))
 	if err != nil {
 		return err
 	}

@@ -5,10 +5,10 @@ type InterfaceInfo struct {
 }
 
 type MemberInfo struct {
-	AccessFlags     uint16
-	NameIndex       uint16
-	DescriptorIndex uint16
-	Attrubutes      []AttributeInfo
+	AccessFlags uint16
+	Name        string
+	Descriptor  string
+	Attrubutes  []AttributeInfo
 }
 
 func (m *MemberInfo) GetName() string {
@@ -22,18 +22,16 @@ func (m *MemberInfo) GetDescriptor() string {
 type FieldInfo MemberInfo
 type MethodInfo MemberInfo
 
-
-
 type ClassInfo struct {
-	Maigc           uint32
-	MinorVersion    uint16
-	MajorVersion    uint16
-	ConstantPool    ConstantPoolInfo
-	AccessFlags     uint16
-	ThisClassIndex  uint16
-	SuperClassIndex uint16
-	Interfaces      []InterfaceInfo
-	Fields          []FieldInfo
-	Methods         []MethodInfo
-	Attributes      []AttributeInfo
+	Maigc        uint32
+	MinorVersion uint16
+	MajorVersion uint16
+	ConstantPool ConstantPoolInfo
+	AccessFlags  uint16
+	ThisClass    string
+	SuperClass   string
+	Interfaces   []string
+	Fields       []FieldInfo
+	Methods      []MethodInfo
+	Attributes   []AttributeInfo
 }
