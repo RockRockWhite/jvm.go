@@ -1,14 +1,16 @@
 package runtime_data
 
-type LocalVariableSlot struct {
+type VariableSlot struct {
 	Data any
 }
 
 type LocalVariables struct {
-	Slots []LocalVariableSlot
+	Slots []VariableSlot
 }
 
 type OperandStack struct {
+	Size  uint
+	Slots []VariableSlot
 }
 
 type Frame struct {
