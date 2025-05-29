@@ -13,14 +13,23 @@ func (inst *NopInst) Execute(frame *runtime_data.Frame) error {
 	return nil
 }
 
-
-type IConstInst struct {
+type IConstInst0 struct {
 	NoOperandsInstruction
 }
 
-func (inst *IConstInst) PushValue(frame *runtime_data.Frame, value int32) error {
-	// Push the integer value onto the operand stack.
-	frame.OperandStack.Slots[frame.OperandStack.Size].Data = value
-	frame.OperandStack.Size++
+func (inst *IConstInst0) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.Push(int32(0))
+
+	return nil
+}
+
+type ConstInst struct {
+	value any
+	NoOperandsInstruction
+}
+
+func (inst *ConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.Push(inst.value)
+
 	return nil
 }
