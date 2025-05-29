@@ -33,3 +33,27 @@ func (inst *ConstInst) Execute(frame *runtime_data.Frame) error {
 
 	return nil
 }
+
+type BiPushInst struct {
+	ByteOprandInstruction
+}
+
+func (inst *BiPushInst) Execute(frame *runtime_data.Frame) error {
+	// Sign-extend the byte operand to
+	val := int32(inst.Operand)
+	frame.OperandStack.Push(val)
+
+	return nil
+}
+
+type SiPushInst struct {
+	DByteOprandInstruction
+}
+
+func (inst *SiPushInst) Execute(frame *runtime_data.Frame) error {
+	// Sign-extend the short operand to 32 bits.
+	val := int32(inst.Index)
+	frame.OperandStack.Push(val)
+	
+	return nil
+}

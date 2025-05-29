@@ -31,19 +31,19 @@ func (inst *BranchInstruction) FetchOperands(reader *ByteCodeReader) error {
 	return nil
 }
 
-type Index8Instruction struct {
-	Index uint8
+type ByteOprandInstruction struct {
+	Operand uint8
 }
 
-func (inst *Index8Instruction) FetchOperands(reader *ByteCodeReader) error {
+func (inst *ByteOprandInstruction) FetchOperands(reader *ByteCodeReader) error {
 	return nil
 }
 
-type Index16Instruction struct {
+type DByteOprandInstruction struct {
 	Index uint16
 }
 
-func (inst *Index16Instruction) FetchOperands(reader *ByteCodeReader) error {
+func (inst *DByteOprandInstruction) FetchOperands(reader *ByteCodeReader) error {
 	return nil
 }
 
