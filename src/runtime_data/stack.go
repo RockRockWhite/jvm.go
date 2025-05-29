@@ -13,6 +13,16 @@ type OperandStack struct {
 	Slots []VariableSlot
 }
 
+func (stack *OperandStack) Push(data any) {
+	if uint(len(stack.Slots)) >= stack.Size {
+		// java exception
+	}
+
+	stack.Slots = append(stack.Slots, VariableSlot{
+		Data: data,
+	})
+}
+
 type Frame struct {
 	LocalVariables LocalVariables
 	OperandStack   OperandStack
