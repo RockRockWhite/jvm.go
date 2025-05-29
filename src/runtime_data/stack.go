@@ -13,9 +13,17 @@ type OperandStack struct {
 	Slots []VariableSlot
 }
 
+func NewOperandStack(size uint) OperandStack {
+	return OperandStack{
+		Size:  size,
+		Slots: make([]VariableSlot, 0, size),
+	}
+}
+
 func (stack *OperandStack) Push(data any) {
 	if uint(len(stack.Slots)) >= stack.Size {
-		// java exception
+		// just panic
+		panic("Operand stack overflow!")
 	}
 
 	stack.Slots = append(stack.Slots, VariableSlot{
