@@ -1,4 +1,4 @@
-package interperter
+package instruction
 
 import (
 	"io"
@@ -46,3 +46,4 @@ type Index16Instruction struct {
 func (inst *Index16Instruction) FetchOperands(reader *ByteCodeReader) error {
 	return nil
 }
+
