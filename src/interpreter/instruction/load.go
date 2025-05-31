@@ -57,3 +57,59 @@ type ILoad3Inst struct {
 func (inst *ILoad3Inst) Execute(frame *runtime_data.Frame) error {
 	return inst.execute(frame, 3)
 }
+
+type LLoadInstBase struct {
+}
+
+func (inst *LLoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
+	local_variable := frame.LocalVariables.GetLong(idx)
+
+	frame.OperandStack.Push(local_variable)
+	return nil
+}
+
+type LLoadInst struct {
+	ByteOprandInstruction
+	LLoadInstBase
+}
+
+func (inst *LLoadInst) Execute(frame *runtime_data.Frame) error {
+	idx := uint16(inst.Operand)
+	return inst.execute(frame, idx)
+}
+
+type LLoad0Inst struct {
+	NoOperandsInstruction
+	LLoadInstBase
+}
+
+func (inst *LLoad0Inst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, 0)
+}
+
+type LLoad1Inst struct {
+	NoOperandsInstruction
+	LLoadInstBase
+}
+
+func (inst *LLoad1Inst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, 1)
+}
+
+type LLoad2Inst struct {
+	NoOperandsInstruction
+	LLoadInstBase
+}
+
+func (inst *ILoad2Inst) LLoad2Inst(frame *runtime_data.Frame) error {
+	return inst.execute(frame, 2)
+}
+
+type LLoad3Inst struct {
+	NoOperandsInstruction
+	LLoadInstBase
+}
+
+func (inst *LLoad3Inst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, 3)
+}
