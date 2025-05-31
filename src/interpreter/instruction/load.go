@@ -8,7 +8,7 @@ type ILoadInstBase struct {
 func (inst *ILoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
 	local_variable := frame.LocalVariables.GetInt(idx)
 
-	frame.OperandStack.Push(local_variable)
+	frame.OperandStack.PushInt(local_variable)
 	return nil
 }
 
@@ -64,7 +64,7 @@ type LLoadInstBase struct {
 func (inst *LLoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
 	local_variable := frame.LocalVariables.GetLong(idx)
 
-	frame.OperandStack.Push(local_variable)
+	frame.OperandStack.PushLong(local_variable)
 	return nil
 }
 
