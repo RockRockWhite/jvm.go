@@ -10,12 +10,6 @@ type LocalVariables struct {
 	Slots []VariableSlot
 }
 
-func (vars *LocalVariables) PushInt(data int32) {
-	vars.Slots = append(vars.Slots, VariableSlot{
-		Data: &data,
-	})
-}
-
 func (vars *LocalVariables) GetInt(index uint16) int32 {
 	data_ptr, ok := vars.Slots[index].Data.(*int32)
 	if !ok {
@@ -32,25 +26,7 @@ func (vars *LocalVariables) SetInt(index uint16, data int32) {
 		panic(fmt.Sprintf("Local variable index %d out of bounds", index))
 	}
 
-	data_ptr, ok := vars.Slots[index].Data.(*int32)
-	if !ok {
-		// just panic
-		panic(fmt.Sprintf("Local variable at index %d is not an int", index))
-	}
-
-	*data_ptr = data
-}
-
-
-func (vars *LocalVariables) PushLong(data int64) {
-	vars.Slots = append(vars.Slots, VariableSlot{
-		Data: &data,
-	})
-
-	// long values take two slots, so we append a nil slot
-	vars.Slots = append(vars.Slots, VariableSlot{
-		Data: nil,
-	})
+	vars.Slots[index].Data = &data
 }
 
 func (vars *LocalVariables) GetLong(index uint16) int64 {
@@ -69,11 +45,5 @@ func (vars *LocalVariables) SetLong(index uint16, data int64) {
 		panic(fmt.Sprintf("Local variable index %d out of bounds", index))
 	}
 
-	data_ptr, ok := vars.Slots[index].Data.(*int64)
-	if !ok {
-		// just panic
-		panic(fmt.Sprintf("Local variable at index %d is not an int", index))
-	}
-
-	*data_ptr = data
+	vars.Slots[index].Data = &data
 }
