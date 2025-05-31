@@ -21,16 +21,21 @@ func (stack *OperandStack) push(slot VariableSlot) {
 	stack.Slots = append(stack.Slots, slot)
 }
 
-func (stack *OperandStack) pop() *VariableSlot {
+func (stack *OperandStack) top() *VariableSlot {
 	if uint(len(stack.Slots)) == 0 {
 		// just panic
 		panic("Operand stack overflow!")
 	}
 
 	top := stack.Slots[len(stack.Slots)-1]
+	return &top
+}
+
+func (stack *OperandStack) pop() *VariableSlot {
+	top := stack.top()
 	stack.Slots = stack.Slots[:len(stack.Slots)-1]
 
-	return &top
+	return top
 }
 
 func (stack *OperandStack) PushInt(data int32) {
