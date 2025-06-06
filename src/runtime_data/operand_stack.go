@@ -60,3 +60,49 @@ func (stack *OperandStack) PushLong(data int64) {
 		Data: &data,
 	})
 }
+
+func (stack *OperandStack) Dup() {
+	top := stack.Slots[len(stack.Slots)-1]
+	stack.Slots = append(stack.Slots, top)
+}
+
+func (stack *OperandStack) DupX1() {
+	top := stack.Slots[len(stack.Slots)-1]
+	rear := stack.Slots[len(stack.Slots)-2:]
+
+	stack.Slots = append(stack.Slots[:len(stack.Slots)-2], top)
+	stack.Slots = append(stack.Slots, rear...)
+}
+
+func (stack *OperandStack) DupX2() {
+	top := stack.Slots[len(stack.Slots)-1]
+	rear := stack.Slots[len(stack.Slots)-3:]
+
+	stack.Slots = append(stack.Slots[:len(stack.Slots)-3], top)
+	stack.Slots = append(stack.Slots, rear...)
+}
+
+func (stack *OperandStack) Dup2() {
+	top1 := stack.Slots[len(stack.Slots)-1]
+	top2 := stack.Slots[len(stack.Slots)-2]
+
+	stack.Slots = append(stack.Slots, top2, top1)
+}
+
+func (stack *OperandStack) Dup2X1() {
+	top1 := stack.Slots[len(stack.Slots)-1]
+	top2 := stack.Slots[len(stack.Slots)-2]
+	rear := stack.Slots[len(stack.Slots)-3:]
+
+	stack.Slots = append(stack.Slots[:len(stack.Slots)-3], top2, top1)
+	stack.Slots = append(stack.Slots, rear...)
+}
+
+func (stack *OperandStack) Dup2X2() {
+	top1 := stack.Slots[len(stack.Slots)-1]
+	top2 := stack.Slots[len(stack.Slots)-2]
+	rear := stack.Slots[len(stack.Slots)-4:]
+
+	stack.Slots = append(stack.Slots[:len(stack.Slots)-4], top2, top1)
+	stack.Slots = append(stack.Slots, rear...)
+}
