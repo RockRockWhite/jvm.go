@@ -18,18 +18,18 @@ type IConstInst0 struct {
 }
 
 func (inst *IConstInst0) Execute(frame *runtime_data.Frame) error {
-	frame.OperandStack.Push(int32(0))
+	frame.OperandStack.PushInt(int32(0))
 
 	return nil
 }
 
-type ConstInst struct {
-	value any
+type IConstInst struct {
+	value int32
 	NoOperandsInstruction
 }
 
-func (inst *ConstInst) Execute(frame *runtime_data.Frame) error {
-	frame.OperandStack.Push(inst.value)
+func (inst *IConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.PushInt(int32(inst.value))
 
 	return nil
 }
@@ -41,7 +41,7 @@ type BiPushInst struct {
 func (inst *BiPushInst) Execute(frame *runtime_data.Frame) error {
 	// Sign-extend the byte operand to
 	val := int32(inst.Operand)
-	frame.OperandStack.Push(val)
+	frame.OperandStack.PushInt(val)
 
 	return nil
 }
@@ -53,7 +53,7 @@ type SiPushInst struct {
 func (inst *SiPushInst) Execute(frame *runtime_data.Frame) error {
 	// Sign-extend the short operand to 32 bits.
 	val := int32(inst.Index)
-	frame.OperandStack.Push(val)
-	
+	frame.OperandStack.PushInt(val)
+
 	return nil
 }

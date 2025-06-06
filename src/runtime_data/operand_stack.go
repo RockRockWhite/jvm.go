@@ -65,6 +65,28 @@ func (stack *OperandStack) PushLong(data int64) {
 	})
 }
 
+func (stack *OperandStack) PushFloat(data float32) {
+	stack.push(VariableSlot{
+		Data: &data,
+	})
+}
+
+func (stack *OperandStack) PushDouble(data float64) {
+	stack.push(VariableSlot{
+		Data: &data,
+	})
+	// Double occupies two slots in the operand stack
+	stack.push(VariableSlot{
+		Data: nil,
+	})
+}
+
+func (stack *OperandStack) PushAddress(data *Object) {
+	stack.push(VariableSlot{
+		Data: data,
+	})
+}
+
 func (stack *OperandStack) Dup() {
 	top := stack.Slots[len(stack.Slots)-1]
 	stack.Slots = append(stack.Slots, top)

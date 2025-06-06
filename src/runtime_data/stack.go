@@ -1,7 +1,5 @@
 package runtime_data
 
-import "fmt"
-
 type Frame struct {
 	LocalVariables LocalVariables
 	OperandStack   OperandStack

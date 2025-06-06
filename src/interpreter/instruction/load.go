@@ -22,40 +22,15 @@ func (inst *ILoadInst) Execute(frame *runtime_data.Frame) error {
 	return inst.execute(frame, idx)
 }
 
-type ILoad0Inst struct {
+// == ILoad0Inst, ILoad1Inst, ILoad2Inst, ILoad3Inst ==
+type ILoadNInst struct {
+	idx uint16
 	NoOperandsInstruction
 	ILoadInstBase
 }
 
-func (inst *ILoad0Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 0)
-}
-
-type ILoad1Inst struct {
-	NoOperandsInstruction
-	ILoadInstBase
-}
-
-func (inst *ILoad1Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 1)
-}
-
-type ILoad2Inst struct {
-	NoOperandsInstruction
-	ILoadInstBase
-}
-
-func (inst *ILoad2Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 2)
-}
-
-type ILoad3Inst struct {
-	NoOperandsInstruction
-	ILoadInstBase
-}
-
-func (inst *ILoad3Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 3)
+func (inst *ILoadNInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, inst.idx)
 }
 
 type LLoadInstBase struct {
@@ -78,38 +53,42 @@ func (inst *LLoadInst) Execute(frame *runtime_data.Frame) error {
 	return inst.execute(frame, idx)
 }
 
-type LLoad0Inst struct {
+// == LLoad0Inst, LLoad1Inst, LLoad2Inst, LLoad3Inst ==
+type LLoadNInst struct {
+	idx uint16
 	NoOperandsInstruction
 	LLoadInstBase
 }
 
-func (inst *LLoad0Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 0)
+func (inst *LLoadNInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, inst.idx)
 }
 
-type LLoad1Inst struct {
-	NoOperandsInstruction
-	LLoadInstBase
+type FLoadInstBase struct {
 }
 
-func (inst *LLoad1Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 1)
+func (inst *FLoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
+	local_variable := frame.LocalVariables.GetFloat(idx)
+
+	frame.OperandStack.PushFloat(local_variable)
+	return nil
 }
 
-type LLoad2Inst struct {
-	NoOperandsInstruction
-	LLoadInstBase
+type FLoadInst struct {
+	FLoadInstBase
+	ByteOprandInstruction
 }
 
-func (inst *ILoad2Inst) LLoad2Inst(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 2)
+func (inst *FLoadInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, uint16(inst.Operand))
 }
 
-type LLoad3Inst struct {
-	NoOperandsInstruction
-	LLoadInstBase
+type FLoadNInst struct {
+	idx uint16
+	FLoadInstBase
+	ByteOprandInstruction
 }
 
-func (inst *LLoad3Inst) Execute(frame *runtime_data.Frame) error {
-	return inst.execute(frame, 3)
+func (inst *FLoadNInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, inst.idx)
 }
