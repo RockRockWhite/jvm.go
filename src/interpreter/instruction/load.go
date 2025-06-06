@@ -86,9 +86,69 @@ func (inst *FLoadInst) Execute(frame *runtime_data.Frame) error {
 type FLoadNInst struct {
 	idx uint16
 	FLoadInstBase
-	ByteOprandInstruction
+	NoOperandsInstruction
 }
 
 func (inst *FLoadNInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, inst.idx)
+}
+
+type DLoadInstBase struct {
+}
+
+func (inst *DLoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
+	local_variable := frame.LocalVariables.GetDouble(idx)
+
+	frame.OperandStack.PushDouble(local_variable)
+	return nil
+}
+
+type DLoadInst struct {
+	DLoadInstBase
+	ByteOprandInstruction
+}
+
+func (inst *DLoadInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, uint16(inst.Operand))
+}
+
+// == DLoad0Inst, DLoad1Inst, DLoad2Inst, DLoad3Inst ==
+type DLoadNInst struct {
+	idx uint16
+	DLoadInstBase
+	NoOperandsInstruction
+}
+
+func (inst *DLoadNInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, inst.idx)
+}
+
+type ALoadInstBase struct {
+}
+
+func (inst *ALoadInstBase) execute(frame *runtime_data.Frame, idx uint16) error {
+	local_variable := frame.LocalVariables.GetAddress(idx)
+
+	frame.OperandStack.PushAddress(local_variable)
+	return nil
+}
+
+type ALoadInst struct {
+	ALoadInstBase
+	ByteOprandInstruction
+}
+
+func (inst *ALoadInst) Execute(frame *runtime_data.Frame) error {
+	return inst.execute(frame, uint16(inst.Operand))
+}
+
+// == ALoad0Inst, ALoad1Inst, ALoad2Inst, ALoad3Inst ==
+type ALoadNInst struct {
+	idx uint16
+	ALoadInstBase
+	NoOperandsInstruction
+}
+
+func (inst *ALoadNInst) Execute(frame *runtime_data.Frame) error {
 	return inst.execute(frame, inst.idx)
 }
