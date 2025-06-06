@@ -59,6 +59,10 @@ func (stack *OperandStack) PushLong(data int64) {
 	stack.push(VariableSlot{
 		Data: &data,
 	})
+	// Long occupies two slots in the operand stack
+	stack.push(VariableSlot{
+		Data: nil,
+	})
 }
 
 func (stack *OperandStack) Dup() {
