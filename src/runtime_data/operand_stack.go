@@ -31,7 +31,7 @@ func (stack *OperandStack) top() *VariableSlot {
 	return &top
 }
 
-func (stack *OperandStack) pop() *VariableSlot {
+func (stack *OperandStack) Pop() *VariableSlot {
 	top := stack.top()
 	stack.Slots = stack.Slots[:len(stack.Slots)-1]
 
@@ -45,7 +45,7 @@ func (stack *OperandStack) PushInt(data int32) {
 }
 
 func (stack *OperandStack) PopInt() int32 {
-	top := stack.pop()
+	top := stack.Pop()
 	data_ptr, ok := top.Data.(*int32)
 	if !ok {
 		// just panic
