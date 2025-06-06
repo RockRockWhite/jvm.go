@@ -74,3 +74,12 @@ func (inst *Dup2X2Inst) Execute(frame *runtime_data.Frame) error {
 	frame.OperandStack.Dup2X2()
 	return nil
 }
+
+type SwapInst struct {
+	NoOperandsInstruction
+}
+
+func (inst *SwapInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.Swap()
+	return nil
+}

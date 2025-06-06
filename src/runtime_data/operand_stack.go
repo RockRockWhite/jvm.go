@@ -106,3 +106,16 @@ func (stack *OperandStack) Dup2X2() {
 	stack.Slots = append(stack.Slots[:len(stack.Slots)-4], top2, top1)
 	stack.Slots = append(stack.Slots, rear...)
 }
+
+func (stack *OperandStack) Swap() {
+	if len(stack.Slots) < 2 {
+		// just panic
+		panic("Not enough elements in operand stack to swap")
+	}
+
+	top1 := stack.Slots[len(stack.Slots)-1]
+	top2 := stack.Slots[len(stack.Slots)-2]
+
+	stack.Slots[len(stack.Slots)-1] = top2
+	stack.Slots[len(stack.Slots)-2] = top1
+}
