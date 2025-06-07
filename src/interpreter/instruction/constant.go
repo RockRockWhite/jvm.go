@@ -13,23 +13,57 @@ func (inst *NopInst) Execute(frame *runtime_data.Frame) error {
 	return nil
 }
 
-type IConstInst0 struct {
-	NoOperandsInstruction
-}
-
-func (inst *IConstInst0) Execute(frame *runtime_data.Frame) error {
-	frame.OperandStack.PushInt(int32(0))
-
-	return nil
-}
-
 type IConstInst struct {
 	value int32
 	NoOperandsInstruction
 }
 
 func (inst *IConstInst) Execute(frame *runtime_data.Frame) error {
-	frame.OperandStack.PushInt(int32(inst.value))
+	frame.OperandStack.PushInt(inst.value)
+
+	return nil
+}
+
+type LConstInst struct {
+	value int64
+	NoOperandsInstruction
+}
+
+func (inst *LConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.PushLong(inst.value)
+
+	return nil
+}
+
+type FConstInst struct {
+	value float32
+	NoOperandsInstruction
+}
+
+func (inst *FConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.PushFloat(inst.value)
+
+	return nil
+}
+
+type DConstInst struct {
+	value float64
+	NoOperandsInstruction
+}
+
+func (inst *DConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.PushDouble(inst.value)
+
+	return nil
+}
+
+type AConstInst struct {
+	value *runtime_data.Object
+	NoOperandsInstruction
+}
+
+func (inst *AConstInst) Execute(frame *runtime_data.Frame) error {
+	frame.OperandStack.PushAddress(inst.value)
 
 	return nil
 }
