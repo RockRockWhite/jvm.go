@@ -21,34 +21,11 @@ func (inst *IStoreInst) Execute(frame *runtime_data.Frame) error {
 	return (&IStoreInstBase{}).execute(frame, idx)
 }
 
-type IStore0Inst struct {
+type IStoreNInst struct {
+	idx uint16
 	NoOperandsInstruction
 }
 
-func (inst *IStore0Inst) Execute(frame *runtime_data.Frame) error {
-	return (&IStoreInstBase{}).execute(frame, 0)
-}
-
-type IStore1Inst struct {
-	NoOperandsInstruction
-}
-
-func (inst *IStore1Inst) Execute(frame *runtime_data.Frame) error {
-	return (&IStoreInstBase{}).execute(frame, 1)
-}
-
-type IStore2Inst struct {
-	NoOperandsInstruction
-}
-
-func (inst *IStore2Inst) Execute(frame *runtime_data.Frame) error {
-	return (&IStoreInstBase{}).execute(frame, 2)
-}
-
-type IStore3Inst struct {
-	NoOperandsInstruction
-}
-
-func (inst *IStore3Inst) Execute(frame *runtime_data.Frame) error {
-	return (&IStoreInstBase{}).execute(frame, 3)
+func (inst *IStoreNInst) Execute(frame *runtime_data.Frame) error {
+	return (&IStoreInstBase{}).execute(frame, inst.idx)
 }
