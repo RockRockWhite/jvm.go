@@ -65,10 +65,32 @@ func (stack *OperandStack) PushLong(data int64) {
 	})
 }
 
+func (stack *OperandStack) PopLong() int64 {
+	top := stack.Pop()
+	data_ptr, ok := top.Data.(*int64)
+	if !ok {
+		// just panic
+		panic("Top of operand stack is not an long")
+	}
+
+	return *data_ptr
+}
+
 func (stack *OperandStack) PushFloat(data float32) {
 	stack.push(VariableSlot{
 		Data: &data,
 	})
+}
+
+func (stack *OperandStack) PopFloat() float32 {
+	top := stack.Pop()
+	data_ptr, ok := top.Data.(*float32)
+	if !ok {
+		// just panic
+		panic("Top of operand stack is not a float")
+	}
+
+	return *data_ptr
 }
 
 func (stack *OperandStack) PushDouble(data float64) {
@@ -81,10 +103,32 @@ func (stack *OperandStack) PushDouble(data float64) {
 	})
 }
 
+func (stack *OperandStack) PopDouble() float64 {
+	top := stack.Pop()
+	data_ptr, ok := top.Data.(*float64)
+	if !ok {
+		// just panic
+		panic("Top of operand stack is not a double")
+	}
+
+	return *data_ptr
+}
+
 func (stack *OperandStack) PushAddress(data *Object) {
 	stack.push(VariableSlot{
 		Data: data,
 	})
+}
+
+func (stack *OperandStack) PopAddress() *Object {
+	top := stack.Pop()
+	data_ptr, ok := top.Data.(*Object)
+	if !ok {
+		// just panic
+		panic("Top of operand stack is not an address")
+	}
+
+	return data_ptr
 }
 
 func (stack *OperandStack) Dup() {

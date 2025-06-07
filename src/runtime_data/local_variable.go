@@ -96,7 +96,7 @@ func (vars *LocalVariables) GetAddress(index uint16) *Object {
 	return data_ptr
 }
 
-func (vars *LocalVariables) SetObject(index uint16, data *Object) {
+func (vars *LocalVariables) SetAddress(index uint16, data *Object) {
 	if index >= uint16(len(vars.Slots)) {
 		// just panic
 		panic(fmt.Sprintf("Local variable index %d out of bounds", index))
