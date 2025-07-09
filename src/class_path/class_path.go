@@ -9,17 +9,17 @@ import (
 )
 
 type ClassPath struct {
-	DefaultClassPath string
+	defaultClassPath string
 }
 
 func NewClassPath(default_patch string) *ClassPath {
 	return &ClassPath{
-		DefaultClassPath: default_patch,
+		defaultClassPath: default_patch,
 	}
 }
 
 func (cp *ClassPath) GetClassFileReader(class_name string) (*class_file.ClassFileReader, error) {
-	found_class_path := fmt.Sprintf("%s/%s", cp.DefaultClassPath, class_name)
+	found_class_path := fmt.Sprintf("%s/%s", cp.defaultClassPath, class_name)
 
 	data, err := os.ReadFile(found_class_path)
 	if err != nil {

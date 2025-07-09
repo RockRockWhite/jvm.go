@@ -206,6 +206,21 @@ func (r *ClassFileReader) BuildClass() (ClassInfo, error) {
 	}, nil
 }
 
+func (r *ClassFileReader) ReadClassFile() (ClassInfo, error) {
+	return r.
+		ReadMagic().
+		ReadVersion().
+		ReadConstantPool().
+		ReadAccessFlags().
+		ReadThisClass().
+		ReadSuperClass().
+		ReadInterfaces().
+		ReadFields().
+		ReadMethods().
+		ReadAttributes().
+		BuildClass()
+}
+
 func NewClassReader(reader io.Reader) *ClassFileReader {
 	return &ClassFileReader{
 		byte_reader: NewByteReader(reader),
