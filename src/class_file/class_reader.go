@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-type ClassReader struct {
+type ClassFileReader struct {
 	byte_reader   ByteReader
 	magic         uint32
 	minor_version uint16
@@ -20,7 +20,7 @@ type ClassReader struct {
 	attributes    []AttributeInfo
 }
 
-func (r *ClassReader) ReadMagic() *ClassReader {
+func (r *ClassFileReader) ReadMagic() *ClassFileReader {
 	r.magic = r.byte_reader.readUInt32()
 	if r.magic != 0xcafebabe {
 		r.byte_reader.errors = append(r.byte_reader.errors, fmt.Errorf("java.lang.ClassFormatError: invalid magic number"))
@@ -29,7 +29,7 @@ func (r *ClassReader) ReadMagic() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadVersion() *ClassReader {
+func (r *ClassFileReader) ReadVersion() *ClassFileReader {
 	r.minor_version = r.byte_reader.readUInt16()
 	r.major_version = r.byte_reader.readUInt16()
 
@@ -42,7 +42,7 @@ func (r *ClassReader) ReadVersion() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadConstantPool() *ClassReader {
+func (r *ClassFileReader) ReadConstantPool() *ClassFileReader {
 	constant_pool_reader := NewConstantPoolReader(r.byte_reader.reader)
 	constant_pool, err := constant_pool_reader.
 		ReadConstantPoolInfos().
@@ -57,12 +57,12 @@ func (r *ClassReader) ReadConstantPool() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadAccessFlags() *ClassReader {
+func (r *ClassFileReader) ReadAccessFlags() *ClassFileReader {
 	r.access_flags = r.byte_reader.readUInt16()
 	return r
 }
 
-func (r *ClassReader) ReadThisClass() *ClassReader {
+func (r *ClassFileReader) ReadThisClass() *ClassFileReader {
 	this_class_idx := r.byte_reader.readUInt16()
 	class_name, err := r.constant_pool.GetClass(this_class_idx)
 
@@ -74,7 +74,7 @@ func (r *ClassReader) ReadThisClass() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadSuperClass() *ClassReader {
+func (r *ClassFileReader) ReadSuperClass() *ClassFileReader {
 	this_class_idx := r.byte_reader.readUInt16()
 	class_name, err := r.constant_pool.GetClass(this_class_idx)
 	if err != nil {
@@ -84,7 +84,7 @@ func (r *ClassReader) ReadSuperClass() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadInterfaces() *ClassReader {
+func (r *ClassFileReader) ReadInterfaces() *ClassFileReader {
 	interfaces_count := r.byte_reader.readUInt16()
 	interfaces := make([]string, 0, interfaces_count)
 
@@ -102,7 +102,7 @@ func (r *ClassReader) ReadInterfaces() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) readAttributes() []AttributeInfo {
+func (r *ClassFileReader) readAttributes() []AttributeInfo {
 	attributes_count := r.byte_reader.readUInt16()
 	attributes := make([]AttributeInfo, 0, attributes_count)
 
@@ -123,7 +123,7 @@ func (r *ClassReader) readAttributes() []AttributeInfo {
 	return attributes
 }
 
-func (r *ClassReader) readMember() MemberInfo {
+func (r *ClassFileReader) readMember() MemberInfo {
 
 	access_flags := r.byte_reader.readUInt16()
 
@@ -149,7 +149,7 @@ func (r *ClassReader) readMember() MemberInfo {
 	}
 }
 
-func (r *ClassReader) ReadFields() *ClassReader {
+func (r *ClassFileReader) ReadFields() *ClassFileReader {
 	fields_count := r.byte_reader.readUInt16()
 	fields := make([]FieldInfo, 0, fields_count)
 
@@ -162,7 +162,7 @@ func (r *ClassReader) ReadFields() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadMethods() *ClassReader {
+func (r *ClassFileReader) ReadMethods() *ClassFileReader {
 	methods_count := r.byte_reader.readUInt16()
 	methods := make([]MethodInfo, 0, methods_count)
 
@@ -175,13 +175,13 @@ func (r *ClassReader) ReadMethods() *ClassReader {
 	return r
 }
 
-func (r *ClassReader) ReadAttributes() *ClassReader {
+func (r *ClassFileReader) ReadAttributes() *ClassFileReader {
 	r.attributes = r.readAttributes()
 
 	return r
 }
 
-func (r *ClassReader) BuildClass() (ClassInfo, error) {
+func (r *ClassFileReader) BuildClass() (ClassInfo, error) {
 	if len(r.byte_reader.errors) != 0 {
 		// convet all errors to a single error
 		error_msg := ""
@@ -206,8 +206,8 @@ func (r *ClassReader) BuildClass() (ClassInfo, error) {
 	}, nil
 }
 
-func NewClassReader(reader io.Reader) ClassReader {
-	return ClassReader{
+func NewClassReader(reader io.Reader) *ClassFileReader {
+	return &ClassFileReader{
 		byte_reader: NewByteReader(reader),
 	}
 }
