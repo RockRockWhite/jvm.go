@@ -32,6 +32,9 @@ func (cl *ClassLoader) loadNonArrayClass(name string) (*Class, error) {
 		return nil, err
 	}
 
+	// store class in classMap
+	cl.classMap[name] = class
+
 	return class, nil
 }
 
