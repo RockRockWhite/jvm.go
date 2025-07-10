@@ -181,17 +181,17 @@ func (r *ClassFileReader) ReadAttributes() *ClassFileReader {
 	return r
 }
 
-func (r *ClassFileReader) BuildClass() (ClassInfo, error) {
+func (r *ClassFileReader) BuildClass() (ClassFile, error) {
 	if len(r.byte_reader.errors) != 0 {
 		// convet all errors to a single error
 		error_msg := ""
 		for _, err := range r.byte_reader.errors {
 			error_msg += fmt.Sprintf("%v; ", err)
 		}
-		return ClassInfo{}, fmt.Errorf("java.lang.ClassFormatError: { %v }", error_msg)
+		return ClassFile{}, fmt.Errorf("java.lang.ClassFormatError: { %v }", error_msg)
 	}
 
-	return ClassInfo{
+	return ClassFile{
 		Maigc:        r.magic,
 		MinorVersion: r.minor_version,
 		MajorVersion: r.major_version,
@@ -206,7 +206,7 @@ func (r *ClassFileReader) BuildClass() (ClassInfo, error) {
 	}, nil
 }
 
-func (r *ClassFileReader) ReadClassFile() (ClassInfo, error) {
+func (r *ClassFileReader) ReadClassFile() (ClassFile, error) {
 	return r.
 		ReadMagic().
 		ReadVersion().
@@ -227,7 +227,7 @@ func NewClassReader(reader io.Reader) *ClassFileReader {
 	}
 }
 
-func ReadClassInfo(reader io.Reader) (ClassInfo, error) {
+func ReadClassInfo(reader io.Reader) (ClassFile, error) {
 	class_reader := NewClassReader(reader)
 	return class_reader.
 		ReadMagic().

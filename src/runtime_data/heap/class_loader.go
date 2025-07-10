@@ -10,7 +10,7 @@ type ClassLoader struct {
 	classMap  map[string]*Class
 }
 
-func (cl *ClassLoader) defineClass(class_file class_file.ClassInfo) (*Class, error) {
+func (cl *ClassLoader) defineClass(class_file class_file.ClassFile) (*Class, error) {
 
 }
 

@@ -18,7 +18,7 @@ func (m *MemberInfo) GetDescriptor() string {
 type FieldInfo MemberInfo
 type MethodInfo MemberInfo
 
-type ClassInfo struct {
+type ClassFile struct {
 	Maigc        uint32
 	MinorVersion uint16
 	MajorVersion uint16
