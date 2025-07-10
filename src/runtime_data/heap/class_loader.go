@@ -1,10 +1,17 @@
 package heap
 
-import "github.com/RockRockWhite/jvm.go/src/class_path"
+import (
+	"github.com/RockRockWhite/jvm.go/src/class_file"
+	"github.com/RockRockWhite/jvm.go/src/class_path"
+)
 
 type ClassLoader struct {
 	classPath *class_path.ClassPath
 	classMap  map[string]*Class
+}
+
+func (cl *ClassLoader) defineClass(class_file class_file.ClassInfo) (*Class, error) {
+
 }
 
 func (cl *ClassLoader) loadNonArrayClass(name string) (*Class, error) {
@@ -20,7 +27,12 @@ func (cl *ClassLoader) loadNonArrayClass(name string) (*Class, error) {
 		return nil, err
 	}
 
-	return nil, nil
+	class, err := cl.defineClass(class_file)
+	if err != nil {
+		return nil, err
+	}
+
+	return class, nil
 }
 
 func (cl *ClassLoader) LoadClass(name string) (*Class, error) {
