@@ -1,6 +1,9 @@
 package heap
 
-import "github.com/RockRockWhite/jvm.go/src/runtime_data"
+import (
+	"github.com/RockRockWhite/jvm.go/src/class_file"
+	"github.com/RockRockWhite/jvm.go/src/runtime_data"
+)
 
 type Field struct {
 }
@@ -44,4 +47,22 @@ type Class struct {
 	InstantSlotCount uint
 	StaticSlotCount  uint
 	StaticVars       []runtime_data.VariableSlot
+}
+
+func NewClass(cf *class_file.ClassFile) *Class {
+	return &Class{
+		AccessFlags:      AccessFlags(cf.AccessFlags),
+		Name:             cf.ThisClass,
+		SuperClassName:   cf.SuperClass,
+		InterfaceNames:   cf.Interfaces,
+		ConstantPool:     &ConstantPool{},
+		Fields:           []*Field{},
+		Methods:          []*Method{},
+		ClassLoader:      &ClassLoader{},
+		SuperClass:       &Class{},
+		Interfaces:       &Class{},
+		InstantSlotCount: 0,
+		StaticSlotCount:  0,
+		StaticVars:       []runtime_data.VariableSlot{},
+	}
 }
