@@ -66,3 +66,10 @@ func NewClass(cf *class_file.ClassFile) *Class {
 		StaticVars:       []runtime_data.VariableSlot{},
 	}
 }
+
+type ClassMember struct {
+	AccessFlags AccessFlags
+	Name        string
+	Descriptor  string
+	MemberClass *Class
+}
